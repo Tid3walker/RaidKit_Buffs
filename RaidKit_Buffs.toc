@@ -1,0 +1,52 @@
+## Interface: 11509
+## Title: RaidKit - Buffs & Consumables
+## Notes: Configurable bar for consumables and buffs: gray = missing, colored = active, Ctrl+click = use.
+## Notes-frFR: Barre configurable pour consommables et buffs : gris = manquant, en couleur = actif, Ctrl+clic = utiliser.
+## Notes-esES: Barra configurable para consumibles y bufos: gris = falta, en color = activo, Ctrl+clic = usar.
+## Notes-esMX: Barra configurable para consumibles y bufos: gris = falta, en color = activo, Ctrl+clic = usar.
+## Notes-deDE: Konfigurierbare Leiste für Consumables und Buffs: grau = fehlt, farbig = aktiv, Strg+Klick = benutzen.
+## Author: Tid3walker
+## Version: 0.8.2
+## IconTexture: Interface\Icons\INV_Potion_62
+## SavedVariables: RaidKitBuffsDB
+
+Locales\Locale.lua
+Locales\Locale_deDE.lua
+Locales\Locale_frFR.lua
+Locales\Locale_esES.lua
+Data\Catalog.lua
+Data\Lists.lua
+Data\Templates.lua
+Data\Buffs.lua
+Core\Core.lua
+Core\Entries.lua
+Core\Rows.lua
+Core\Migrations.lua
+Core\Slash.lua
+Core\Profiles.lua
+Core\Auras.lua
+Bar\BarBase.lua
+Bar\BarGroups.lua
+Bar\BarStyle.lua
+Bar\BarMove.lua
+Bar\BarVisibility.lua
+Bar\BarButtons.lua
+Bar\BarState.lua
+Bar\BarAreas.lua
+Bar\BarAreaIcons.lua
+Bar\BarDemo.lua
+Bar\BarDebug.lua
+Bar\BarSplit.lua
+Bar\Bar.lua
+Options\OptionsBase.lua
+Options\OptionsModel.lua
+Options\OptionsDrag.lua
+Options\OptionsCatalog.lua
+Options\OptionsRows.lua
+Options\OptionsProfiles.lua
+Options\OptionsInfo.lua
+Options\OptionsRefresh.lua
+Options\OptionsBars.lua
+Options\OptionsSplit.lua
+Options\OptionsRowStack.lua
+Options\Options.lua

@@ -1,0 +1,16 @@
+RaidKit Buffs - sound credits
+==========================
+
+The sounds in this folder come from Freesound (https://freesound.org).
+
+Fail.mp3
+  "Retro video game sfx - Fail" by OwlStorm
+  https://freesound.org/s/404743/
+  License: Creative Commons 0 (public domain)
+  Used as: loss alarm sound "Fail (retro)"
+
+Nooo.mp3
+  "Noooh!" (scream) by jorickhoofd
+  https://freesound.org/s/180350/
+  License: Creative Commons Attribution 4.0 (CC BY 4.0), https://creativecommons.org/licenses/by/4.0/
+  Used as: loss alarm sound "Nooo!" (Freesound preview MP3, unchanged)
