@@ -1,0 +1,453 @@
+:root {
+  --bg: #15161a; --panel: #1f2026; --text: #e8e6e3; --muted: #9a9890;
+  --gold: #ffd100; --grey: #808080;
+  --frame-bg: rgba(10, 10, 12, .94); --frame-border: #5a5348;
+  --btn-top: #8b1a10; --btn-bot: #4a0d08;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 14px/1.4 "Segoe UI", system-ui, sans-serif; }
+header, section { max-width: 1280px; margin: 0 auto; padding: 10px 16px; }
+h1 { font-size: 20px; margin: 8px 0 4px; }
+h2 { font-size: 13px; margin: 0 0 8px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .05em; }
+p.hint { color: var(--muted); margin: 4px 0; font-size: 13px; }
+/* page help, can be folded (2026-11-22, user; state per browser in localStorage) */
+details.pagehelp summary { display: inline-block; list-style: none; cursor: pointer; user-select: none; margin: 6px 0;
+  padding: 5px 14px; font: 600 14px/1.3 "Segoe UI", sans-serif; color: var(--text); background: #2a2d36;
+  border: 1px solid #4a4e5c; border-radius: 4px; }
+details.pagehelp summary::-webkit-details-marker { display: none; }
+details.pagehelp summary::before { content: "\25B8"; display: inline-block; width: 1em; margin-right: 4px; transition: transform .15s; }
+details.pagehelp[open] summary::before { transform: rotate(90deg); }
+details.pagehelp summary:hover { background: #353946; border-color: #6a6f80; }
+/* language of the whole page, top right (2026-11-14, user) */
+.pagehead { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.pagelang { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 13px; }
+.pagelang select { background: #2b2d35; color: var(--text); border: 1px solid #3c3f4a; border-radius: 4px; padding: 4px 8px; font: inherit; cursor: pointer; }
+.pagelang select:hover { background: #363946; }
+.toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 8px; }
+.toolbar button { background: #2b2d35; color: var(--text); border: 1px solid #3c3f4a; border-radius: 4px; padding: 5px 10px; cursor: pointer; font: inherit; font-size: 13px; }
+.toolbar button:hover { background: #363946; }
+.toolbar button.on { background: #6b1a14; border-color: #a52a20; }
+.toolbar .sep { width: 1px; height: 22px; background: #3c3f4a; }
+kbd { background: #2b2d35; border: 1px solid #444; border-radius: 3px; padding: 0 4px; font-size: 12px; }
+
+/* Icons (Wowhead) */
+.ic { background-color: #333; background-size: 116%; background-position: center; border: 1px solid #000; }
+
+/* ---------- Game screen ---------- */
+.screen { position: relative; height: 380px; overflow: hidden; border: 1px solid #333; border-radius: 6px;
+  background: radial-gradient(ellipse at 30% 80%, #2c3a26 0%, #1b2418 45%, #10140f 100%); user-select: none; }
+/* minimap dummy (2026-11-22, user): top right like in the game; Blizzard buffs and the mockup's start place of the bar
+   (MOCKUP_START_POINT in core.js) sit just left of it */
+.minimap { position: absolute; right: 14px; top: 12px; width: 140px; height: 140px; border-radius: 50%; box-sizing: border-box;
+  border: 4px solid #7d6a3f; box-shadow: 0 0 0 1px #2a2316, inset 0 0 18px rgba(0,0,0,.7);
+  background: radial-gradient(circle at 45% 40%, #4d5f3a 0%, #36452a 50%, #222b1b 100%);
+  display: flex; align-items: center; justify-content: center; font-size: 11px; color: rgba(255,255,255,.4); pointer-events: none; }
+.minimap::after { content: ""; position: absolute; left: 50%; top: 50%; width: 0; height: 0; margin: -5px 0 0 -4px;
+  border-left: 4px solid transparent; border-right: 4px solid transparent; border-bottom: 10px solid #e8e0c0; }
+.minimap span { margin-top: 44px; }
+.bufffake { position: absolute; right: 168px; top: 12px; width: 416px; display: flex; flex-wrap: wrap; gap: 2px; justify-content: flex-end; }
+.bufffake div { width: 24px; height: 24px; }
+.bufffake div.brk { flex-basis: 100%; height: 4px; }
+.bufffake div.wpn { box-shadow: 0 0 0 1px #b048f8; margin-right: 6px; }
+/* weapon entries (2026-11-09): MH = main hand, OH = off hand, bottom left and small (2026-11-14, top is the
+   remaining time); Windfury = blue glow */
+.cb-btn .hand, .cb-other .hand, .content .itm .handmark { position: absolute; left: 0; bottom: 0; font: 700 6px/1 "Segoe UI", sans-serif; color: #fff; background: rgba(110, 40, 160, .9); padding: 1px 1px; border-radius: 0 2px 0 0; pointer-events: none; }
+.content .itm .handmark { pointer-events: auto; cursor: pointer; }
+.content .itm .handmark:hover { background: #b048f8; }
+.cb-btn.wf .border { box-shadow: 0 0 6px 2px rgba(80, 170, 255, .9); }
+.combat-badge { position: absolute; left: 12px; top: 10px; font-size: 12px; padding: 2px 8px; border-radius: 3px; background: #a52a20; color: #fff; display: none; }
+.screen.combat .combat-badge { display: block; }
+.screen.combat { box-shadow: inset 0 0 40px rgba(200, 30, 20, .35); }
+.flash { position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%); font-size: 13px; color: #ffd100; text-shadow: 1px 1px 0 #000; opacity: 0; transition: opacity .3s; pointer-events: none; }
+.flash.show { opacity: 1; }
+
+.cb-container { position: absolute; }
+.cb-label { position: absolute; white-space: nowrap; color: var(--gold); font: 600 11px/1 "Segoe UI", sans-serif; text-shadow: 1px 1px 0 #000; transform: translateY(-50%); }
+.cb-btn { position: absolute; cursor: pointer; }
+.cb-btn .border { position: absolute; inset: calc(-1 * var(--bw, 1px)); } /* thickness per group (style 2026-11-14) */
+.cb-btn .icon { position: absolute; inset: 0; border: 0; }
+.cb-btn.missing .icon { filter: grayscale(1) brightness(.55); }
+.cb-btn:hover .hl { position: absolute; inset: 0; background: rgba(255,255,255,.18); }
+.cb-btn .cd { position: absolute; inset: 0; pointer-events: none; }
+.cb-btn .count { position: absolute; right: 2px; bottom: 1px; font: 700 9px/1 "Segoe UI", sans-serif; text-shadow: 1px 1px 0 #000, -1px -1px 0 #000; } /* 2 px smaller since 2026-11-10 (user), = SetFont(size - 2) in Bar.lua */
+.cb-btn .timer { position: absolute; left: 50%; transform: translateX(-50%); top: 1px; padding: 1px 2px; white-space: nowrap; background: rgba(0,0,0,.55); text-align: center; font: 600 10px/1 "Segoe UI", sans-serif; color: #fff; text-shadow: 1px 1px 0 #000, -1px -1px 0 #000; }
+/* soft dark background behind the remaining time (user 2026-11-12), only while there is a text (= TimerText in Bar.lua) */
+.cb-btn .timer:empty, .cb-other .timer:empty { display: none; }
+.cb-btn .timer.low, .cb-other .timer.low { color: rgb(255,209,0); } /* at most 10 % of the duration left (2026-11-12, = TIMER_LOW in Bar.lua) */
+/* = Bar.lua mover: 1 px outline (2 px until 2026-11-10) around icons + row names while Shift is held over the bar, never takes the mouse */
+.cb-mover { position: absolute; border: 1px solid rgba(26, 153, 255, .8); z-index: 0; display: none; pointer-events: none; }
+.cb-mover.show { display: block; }
+/* = container.demoLabel (GameFontNormalHuge, orange), 10 px beside the outline box (vertically centred) on the side with more room */
+.cb-demolabel { position: absolute; z-index: 6; display: none; white-space: nowrap; pointer-events: none; font: 700 20px/1 "Friz Quadrata TT", Georgia, serif; color: #ff801a; text-shadow: 1px 1px 0 #000; }
+/* option "Rahmen um die Icons" off (2026-11-10, showBorders): no border anywhere, except while an icon blinks
+   red for a lost consumable (the loss alarm must stay visible) */
+.cb-container.noborder .border { display: none; }
+.cb-container.noborder .cb-btn.lost .border { display: block; }
+/* option "Zeit anzeigen" off (2026-11-14, per group) */
+.cb-container.notime .timer { display: none; }
+.cb-btn .timer, .cb-other .timer { font-size: var(--tfs, 10px) !important; } /* "Font size" per group (2026-11-14) */
+/* = Bar.lua capTint (2026-11-10): background of the whole bar (icons + row names) by free buff slots */
+.cb-tint { position: absolute; z-index: 0; pointer-events: none; border-radius: 3px; display: none; }
+/* groups (proposal 2026-11-11): optional frame like the "Unerwünschte Buffs" button, neutral colour; the cap tint
+   lies on top of its fill. Outline while dragging: yellow, green = snapped to another group's edge */
+.cb-gframe { position: absolute; z-index: 0; pointer-events: none; border-radius: 2px;
+  background: linear-gradient(rgba(40,40,46,.85), rgba(16,16,20,.85)); box-shadow: 0 0 0 1px #6c6c78; }
+.cb-gname { color: #c8c8d0; font-weight: 700; } /* group name (2026-11-15 proposal: inside the frame, every group alike) */
+.cb-mover.drag { border-color: rgba(255, 209, 0, .9); }
+.cb-mover.snap { border-color: rgba(64, 255, 64, .95); }
+/* 2026-11-11: yellow = what a drag from here would move (hover: middle = the whole docked cluster, edge = only this
+   group); while editing the outline takes the mouse below the icons (drag on the empty space of a group) */
+.cb-mover.hot { border-color: rgba(255, 209, 0, .9); }
+.cb-mover.show.edit, .cb-mover.show.mouse { pointer-events: auto; }
+/* = SetHitRectInsets(-5) in Bar.lua: the edge can be grabbed a little outside the line too (session 4b) */
+.cb-mover.show.edit::after, .cb-mover.show.mouse::after { content: ""; position: absolute; inset: -6px; }
+/* no lines around the placeholders (session 4b, user: why a second frame inside the group?) */
+.cb-preview, .cb-preview.open.up, .cb-preview.open:not(.up), .cb-preview .ph { border-color: transparent !important; }
+.cb-area .cb-other, .cb-area .cb-unwrow, .cb-area .cb-counter { z-index: 1; } /* above the outline that takes the mouse */
+.cb-btn { z-index: 1; }
+
+.tooltip { position: fixed; z-index: 100; pointer-events: none; background: rgba(8, 8, 20, .95); border: 1px solid #6c6c80; border-radius: 4px; padding: 6px 8px; font-size: 12px; min-width: 190px; max-width: 290px; display: none; }
+.tooltip .n { color: #fff; font-weight: 600; font-size: 13px; }
+.tooltip .y { color: #ffd100; }
+/* proposal: status mark on every bar icon + slot marker */
+.cb-btn .st { position: absolute; left: 1px; bottom: 1px; width: 12px; height: 12px; border-radius: 50%; display: grid; place-items: center;
+  font: 700 9px/1 "Segoe UI", sans-serif; background: rgba(0,0,0,.75); pointer-events: none; }
+.cb-btn .st.ok { color: #33e633; box-shadow: 0 0 0 1px #33e633; }
+.cb-btn .st.no { color: #ff4040; box-shadow: 0 0 0 1px #ff4040; }
+.cb-btn .st.lock { color: #ddd; box-shadow: 0 0 0 1px #ddd; font-size: 7px; }
+/* = slotMark in Bar.lua / Options.lua: 6x6 gold square, hidden since 2026-11-10 (user) */
+.cb-btn .slotmark, .content .itm .slotmark { position: absolute; right: 1px; top: 1px; width: 6px; height: 6px; background: #ffd100; pointer-events: none; display: none !important; }
+.tooltip .g { color: #33ff33; } .tooltip .r { color: #ff4d4d; } .tooltip .w { color: #fff; } .tooltip .d { color: #999; } .tooltip .b { color: #66ccff; }
+
+/* chat frame inside the game screen, bottom left like in the game (2026-11-22, user; before a panel below the page) */
+.chat { position: absolute; left: 10px; bottom: 10px; width: 420px; max-width: calc(100% - 20px); height: 110px; box-sizing: border-box;
+  overflow-y: auto; background: rgba(0,0,0,.4); border-radius: 3px; padding: 4px 8px; font: 12px/1.45 Consolas, monospace; color: #fff; }
+.chat .p { color: #33ff99; }
+.bag { display: flex; flex-wrap: wrap; gap: 6px; }
+.bag .slot { width: 34px; height: 34px; cursor: grab; }
+.panel { background: var(--panel); border: 1px solid #2e3038; border-radius: 6px; padding: 12px; }
+.side { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); margin-top: 16px; }
+
+/* ---------- Options ---------- */
+.host-wrap { overflow-x: auto; padding-bottom: 8px; }
+.window { position: relative; /* width, height: CONTENT_W + 8, CONTENT_H + 34 (page.js; 968 x 622 until 2026-11-16) */ background: var(--frame-bg); border: 2px solid var(--frame-border); border-radius: 4px; }
+.window .titlebar { position: absolute; left: 0; right: 0; top: 0; height: 24px; background: linear-gradient(#3a3020, #1d180f); border-bottom: 1px solid var(--frame-border); }
+/* title bar (2026-11-09): addon icon + name left, version right (= CreateWindow in Options.lua) */
+.window .titleicon { position: absolute; left: 8px; top: 5px; width: 14px; height: 14px; background: url(https://wow.zamimg.com/images/wow/icons/large/inv_potion_62.jpg) center / 120%; }
+.window .titletext { position: absolute; left: 27px; top: 4px; color: #fff; font-size: 13px; }
+.window .titlever { position: absolute; right: 30px; top: 6px; color: var(--grey); font-size: 11px; }
+.window .close { position: absolute; right: 4px; top: 3px; width: 18px; height: 18px; background: #7a1a10; color: #fff; border: 1px solid #000; font-size: 12px; line-height: 15px; text-align: center; }
+.settings { position: relative; width: 920px; height: 640px; background: #0e0e10; border: 2px solid var(--frame-border); border-radius: 4px; }
+.settings .head { position: absolute; left: 0; right: 0; top: 0; height: 30px; background: linear-gradient(#3a3020, #1d180f); color: #ffd100; text-align: center; line-height: 30px; font-size: 14px; }
+.settings .cats { position: absolute; left: 10px; top: 40px; width: 220px; bottom: 50px; background: rgba(255,255,255,.03); border: 1px solid #2a2a2a; padding: 6px; font-size: 13px; }
+.settings .cats div { padding: 3px 8px; color: #ccc; }
+.settings .cats .h { color: #ffd100; margin-top: 6px; }
+.settings .cats .on { background: rgba(255,209,0,.15); color: #fff; }
+.settings .canvas { position: absolute; left: 240px; top: 40px; right: 10px; bottom: 50px; border: 1px dashed rgba(255,255,255,.12); overflow: hidden; }
+.settings .blizz-title { position: absolute; left: 16px; top: 16px; color: #ffd100; font-size: 17px; }
+.settings .blizz-text { position: absolute; left: 16px; top: 46px; color: #fff; font-size: 13px; }
+.settings .blizz-btn { position: absolute; left: 16px; top: 74px; width: 300px; height: 24px; line-height: 22px; text-align: center; background: linear-gradient(var(--btn-top), var(--btn-bot)); border: 1px solid #2a2a2a; border-radius: 3px; color: var(--gold); font: 600 12px/22px "Segoe UI", sans-serif; cursor: pointer; }
+.settings .blizz-btn:hover { filter: brightness(1.25); }
+.content .rowline .eye { width: 16px; text-align: center; font-size: 12px; cursor: pointer; }
+.content .rowline.off .nm { color: #808080; }
+.content .rowline.off .eye { filter: grayscale(1); opacity: .35; }
+.content .menu.addmenu { width: 168px; }
+.content .menu.addmenu .it { width: 150px; }
+.content .menu.listmenu { width: 234px; padding: 6px; }
+.content .pencil.small { width: 14px; height: 14px; line-height: 14px; font-size: 12px; }
+
+.content { position: absolute; /* width, height: CONTENT_W, CONTENT_H (options-base.js) */ font: 13px/1.2 "Segoe UI", sans-serif; user-select: none; }
+/* navigation as tabs at the top (proposal 2026-11-14, user; before a list on the left) */
+/* z-index: the page "Bars" is moved up (ROWS_DY) and would lie over the tabs, they could not be clicked */
+.content .navtab { z-index: 5; }
+.content .navdemo { z-index: 6; height: 22px; line-height: 20px; } /* demo in the tab line (2026-11-15) */
+.content .navtab { height: 24px; line-height: 22px; border-radius: 4px 4px 0 0; border-bottom: none; }
+.content .navtab.on { background: linear-gradient(#5a1a12, #2a0c08); }
+.content .navline { height: 1px; background: rgba(255,209,0,.45); }
+.content .page { height: 552px; } /* width = PAGE_W (options-base.js) */
+.content .a { position: absolute; }
+.content .lbl { color: var(--gold); white-space: nowrap; }
+.content .lbl.hl { color: #fff; } .content .lbl.small { font-size: 11px; color: #fff; } .content .lbl.dis { color: var(--grey); font-size: 11px; white-space: pre-line; }
+.content .wbtn { height: 22px; background: linear-gradient(var(--btn-top), var(--btn-bot)); border: 1px solid #2a2a2a; border-radius: 3px; color: var(--gold); font: 600 12px/20px "Segoe UI", sans-serif; text-align: center; cursor: pointer; white-space: nowrap; overflow: hidden; padding: 0 4px; }
+.content .wbtn:hover { filter: brightness(1.25); }
+.content .wbtn.sel { color: #fff; box-shadow: inset 0 0 0 1px #ffd100, 0 0 6px rgba(255, 209, 0, .5); }
+.content input.wedit { height: 20px; background: #0a0a0a; border: 1px solid #555; border-radius: 2px; color: #fff; font: 12px "Segoe UI", sans-serif; padding: 0 5px; user-select: text; }
+.content .cbx { height: 24px; display: flex; align-items: center; cursor: pointer; }
+.content .cbx .box { width: 18px; height: 18px; margin: 3px; border: 1px solid #888; background: #111; position: relative; flex: none; }
+.content .cbx.on .box::after { content: "\2714"; position: absolute; left: 2px; top: -3px; color: var(--gold); font-size: 16px; }
+.content .cbx .t { color: #fff; white-space: nowrap; margin-left: 2px; }
+.content .cbx.dis { opacity: .45; cursor: default; }
+/* = Slider() in Options.lua: label 0, value 96, [-] 124, track 144-206, [+] 210 */
+.content .wslider { width: 222px; height: 22px; } /* 230 until 2026-11-14: room for the inherit button */
+.content .wslider .sl-l { position: absolute; left: 0; top: 3px; }
+.content .wslider .sl-v { position: absolute; left: 96px; top: 3px; }
+.content .wslider .sl-m { position: absolute; left: 124px; top: 1px; }
+.content .wslider .sl-r { position: absolute; left: 144px; top: 5px; width: 54px; height: 12px; margin: 0; accent-color: #ffd100; }
+.content .wslider .sl-p { position: absolute; left: 202px; top: 1px; }
+.content .wslider.dis .sl-l, .content .wslider.dis .sl-v { color: var(--grey); }
+.content .wslider.dis .wbtn { filter: grayscale(1) brightness(.6); cursor: default; }
+.content .menu.posmenu { width: 150px; padding: 6px; }
+.content .grid-area { background: rgba(0,0,0,.3); }
+.content .pvbox { pointer-events: none; } /* preview line of a group (2026-11-15): grey, no mouse */
+.content .pvic { position: absolute; top: 4px; width: 22px; height: 22px; background-size: cover; filter: grayscale(1); opacity: .55; }
+.content .pvlbl { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); font-size: 11px; color: #808080; }
+.content .grid-area.glow { background: rgba(255, 209, 0, .15); }
+.content .grid-empty { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; text-align: center; color: #777; font-size: 12px; pointer-events: none; padding: 0 20px; }
+.content .itm { width: 22px; height: 22px; cursor: grab; } /* = ITEM_SIZE (30 until 2026-11-14) */
+.content .itm:hover { outline: 1px solid rgba(255,255,255,.6); }
+/* proposal: fold-out column with alternatives below a grid icon */
+.content .itm { position: absolute; }
+/* icon with alternatives in the grid: gold corner bottom right (user 2026-11-12, variant A of six; before a thick
+   gold frame) = b.altMark in Options.lua */
+.content .itm.hasalt::after { content: ""; position: absolute; pointer-events: none; right: 0; bottom: 0; width: 0; height: 0;
+  border-left: 9px solid transparent; border-bottom: 9px solid #ffd100; filter: drop-shadow(-1px -1px 0 rgba(0,0,0,.7)); }
+.content .flyout { z-index: 30; padding: 4px 3px 3px; display: grid; grid-auto-flow: column; grid-auto-columns: 22px; gap: 2px; /* 30/4 until 2026-11-14 */
+  background: rgba(10,10,12,.96); border: 1px solid #6c5a2a; border-top: none; border-radius: 0 0 4px 4px; }
+.content .fcell { position: relative; width: 22px; height: 22px; flex: none; cursor: grab; outline: 1px solid #555; }
+.content .fcell:hover { outline: 1px solid rgba(255,255,255,.7); }
+.content .fcell.pick { outline: 2px solid #ffd100; }
+.content .fcell.empty { cursor: default; outline: 1px dashed #777; background: rgba(255,255,255,.04); display: grid; place-items: center; }
+.content .fcell.empty::before { content: "+"; color: #888; font: 400 18px/1 "Segoe UI", sans-serif; }
+.content .fcell.hot { outline: 2px solid #40ff40; background: rgba(64,255,64,.18); }
+.content .fcell.drop { box-shadow: 0 -3px 0 0 #1a99ff; }
+.content .catlist { width: 234px; background: rgba(0,0,0,.3); overflow: hidden; }
+.content .catline { height: 20px; display: flex; align-items: center; gap: 4px; padding: 0 2px; cursor: grab; font-size: 11px; color: #fff; }
+.content .catline:hover { background: rgba(255, 209, 0, .15); }
+.content .catline .ic { width: 18px; height: 18px; flex: none; }
+.content .catline .nm { flex: 0 1 auto; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: clip; }
+.content .catline .sp { flex: 1; }
+.content .catline.in .nm { color: #66ff66; }
+/* section header when sorted by Typ/Werte (= header lines in RefreshCatalog) */
+.content .catline.head { cursor: default; color: var(--gold); padding-left: 4px; box-shadow: inset 0 -1px 0 rgba(255, 209, 0, .35); }
+.content .catline.head:hover { background: none; }
+/* first entry of a later part of a category (2026-11-20, = line.subLine in Lua): faint 1 px line on the top edge, 6 px in */
+.content .catline.subtop { position: relative; }
+.content .catline.subtop::before { content: ""; position: absolute; left: 6px; right: 6px; top: 0; height: 1px; background: rgba(255, 255, 255, .2); }
+.content .catline.head .ic { display: none; }
+.content .menu.sortmenu { width: 130px; padding: 6px; }
+.content .wbtn.dis, .content .wbtn.dis:hover { filter: grayscale(1) brightness(.6); color: #888; cursor: default; }
+.content .wbtn.tiny { height: 20px; line-height: 18px; padding: 0; }
+.content .rowlist { background: rgba(0,0,0,.3); } /* width = ROWS_W, set in options-rows.js (CSS had 190 px left over after 2026-11-16) */
+.content .rowline { height: 20px; display: flex; align-items: center; gap: 4px; padding: 0 4px; cursor: grab; font-size: 11px; color: #fff; }
+.content .rowlist .rowline { height: 17px; } /* row list with groups: 19 lines (2026-11-11) */
+.content .rowline:hover { background: rgba(255, 209, 0, .15); }
+.content .rowline.sel { background: rgba(255, 209, 0, .12); }
+.content .rowline.sel .nm { color: var(--gold); }
+.content .rowline.drop { background: rgba(255, 209, 0, .3); }
+.content .rowline .nm { flex: 1; overflow: hidden; white-space: nowrap; }
+.content .rowline .n { color: var(--grey); }
+/* groups in the row list (proposal 2026-11-11): header line per group, rows indented below it */
+.content .rowline.grp { background: rgba(255,255,255,.05); }
+.content .rowline.grp .nm { color: #c8c8d0; font-weight: 600; }
+.content .rowline.grp.sel { background: rgba(255, 209, 0, .18); }
+.content .rowline.grp.sel .nm { color: var(--gold); }
+.content .rowline.goff .nm { color: #808080; } /* row of a hidden group (2026-11-12; groups have an eye since then) */
+.content .rowlist .rowline.grp.off .nm, .content .rowlist .rowline.grp.area.off .nm { color: #808080; } /* hidden group (2026-11-12) */
+.content .rowline.sub { padding-left: 14px; }
+.page.grpmode:not(.unwmode) .rowpanel:not(.stackfly), .page.unwmode .rowsize { display: none !important; }
+/* heading "Reihen" (2026-11-11): click = "Alle Gruppen" in the middle column */
+.content .headlink { cursor: pointer; }
+.content .headlink:hover, .content .headlink.on { color: #fff; text-decoration: underline; }
+/* "All Groups" (allmode, allpanel) is gone since session 20 */
+.content .rowlist .rowline.cat { margin-top: 6px; background: none; cursor: default; padding-left: 2px; }
+.content .rowlist .rowline.cat .nm { color: #9a9aa8; font-weight: 700; text-transform: uppercase; font-size: 10px; letter-spacing: .5px; }
+/* the first line is the heading "Bars" with "+" and "-" right-aligned (session 20, user; "All Groups" is gone) */
+.content .rowlist .rowline.cat:first-child { margin-top: 2px; height: 20px; }
+.content .rowlist .rowline .wbtn.lhbtn { position: static; width: 18px; height: 16px; line-height: 14px; margin-left: 2px; flex: none; }
+.content .rowlist .rowline.cat:first-child .pencil, .content .rowlist .rowline.cat:first-child .eye { display: none; }
+.content .rowlist .rowline.cat .pencil, .content .rowlist .rowline.cat .eye { visibility: hidden; }
+.content .rowlist .rowline.grp, .content .rowlist .rowline.sub { margin-left: 8px; }
+.page.unwmode .notunw, .page.debuffmode .notdebuff { display: none !important; }
+body.nocap .caponly { display: none !important; } /* only with a buff cap (Era), 2026-11-21 */
+.page:not(.grpmode) .grppanel { display: none !important; }
+/* style tabs (proposal 2026-11-14): only for "Alle Gruppen" and groups; on Frame/Separator/Icon borders the layout
+   elements of the middle column are hidden, only the panel of the chosen tab is shown */
+.page:not(.grpmode) .stab, .page:not(.stylemode) .spanel, .content .retired { display: none !important; }
+.page.stylemode .grppanel:not(.spanel), .page.stylemode .rowpanel { display: none !important; }
+.page.stylemode:not(.s-frame) .sp-frame, .page.stylemode:not(.s-sep) .sp-sep, .page.stylemode:not(.s-icon) .sp-icon { display: none !important; }
+.content .wbtn.stab.on { background: linear-gradient(#5a1a12, #2a0c08); }
+.content .menu .it .prev { display: inline-block; width: 34px; height: 14px; margin-right: 8px; vertical-align: -3px; }
+.content .cswatch { display: flex; align-items: center; gap: 8px; width: 222px; height: 20px; cursor: pointer; }
+.content .cswatch .t { flex: 1; color: var(--gold); font-size: 12px; }
+.content .cswatch .box { width: 34px; height: 16px; border: 1px solid #888; background: repeating-conic-gradient(#666 0 25%, #333 0 50%) 0 0 / 8px 8px; }
+.content .cswatch .fill { width: 100%; height: 100%; }
+.content .cswatch:hover .box { border-color: #fff; }
+.content .cswatch.dis { cursor: default; } .content .cswatch.dis .t { color: var(--grey); } .content .cswatch.dis .box { opacity: .35; }
+/* reset button (2026-11-16, user; 2026-11-14 until session 20 the inherit button): behind every slider of a group,
+   since 2026-11-17 also behind the colour fields and sliders of the style tabs; gold = own value, click = default of
+   the addon again; grey = the default */
+.content .ibtn { width: 14px; height: 14px; line-height: 13px; text-align: center; font-size: 12px; color: #1a1408; background: var(--gold);
+  border: 1px solid #000; border-radius: 3px; cursor: pointer; }
+.content .ibtn:hover { filter: brightness(1.25); }
+.content .ibtn.dis { background: #3a3a40; color: #6c6c74; cursor: default; filter: none; }
+.content .cpick { z-index: 50; width: 210px; padding: 8px; background: rgba(10,10,12,.97); border: 1px solid #6c5a2a; border-radius: 4px; box-shadow: 0 4px 14px rgba(0,0,0,.7); }
+.content .cpick .h { color: var(--gold); font-size: 12px; margin-bottom: 6px; }
+.content .cpick .row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; color: #ddd; font-size: 11px; }
+.content .cpick input[type=color] { width: 60px; height: 26px; padding: 0; border: 1px solid #555; background: none; cursor: pointer; }
+.content .cpick input[type=range] { flex: 1; }
+.content .cpick .btns { display: flex; gap: 6px; justify-content: flex-end; }
+.content .cpick .wbtn { position: static; }
+.page.areamode .notarea { display: none !important; }
+/* Leisten list (user 2026-11-12, proposal B "Kästen" chosen): every group a box; the three buff areas look like any
+   group (= RefreshRows in Options.lua). "Alle Gruppen" (gold box at the top) is gone since session 20 */
+.content .rowlist .rowline.grp.area .nm { color: #c8c8d0; font-weight: 600; font-style: normal; }
+.content .rowlist .rowline.grp.area.sel .nm { color: var(--gold); }
+.content .rowlist .rowline.grp { margin-top: 4px; background: rgba(255,255,255,.08); border-radius: 3px 3px 0 0;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.25), inset 1px 0 0 rgba(255,255,255,.25), inset -1px 0 0 rgba(255,255,255,.25); }
+.content .rowlist .rowline.grp.glast { border-radius: 3px; box-shadow: inset 0 0 0 1px rgba(255,255,255,.25); }
+.content .rowlist .rowline.sub { padding-left: 10px; box-shadow: inset 1px 0 0 rgba(255,255,255,.25), inset -1px 0 0 rgba(255,255,255,.25); }
+.content .rowlist .rowline.sub.glast { border-radius: 0 0 3px 3px; box-shadow: inset 1px 0 0 rgba(255,255,255,.25), inset -1px 0 0 rgba(255,255,255,.25), inset 0 -1px 0 rgba(255,255,255,.25); }
+.content .rowlist .rowline.grp.sel { background: rgba(255,209,0,.18); }
+.page:not(.areamode) .areaonly { display: none !important; }
+.content .rowline.grp.area .nm { color: #9fc4e8; font-weight: 400; font-style: italic; }
+/* empty "Unerwünschte Buffs" while the previews show (2026-11-11), red like its X */
+.cb-preview.unw { border-color: rgba(255, 64, 64, .7); }
+.cb-preview.unw .ph { border-color: rgba(255, 64, 64, .5); background: rgba(255, 64, 64, .08); }
+.content .pencil { width: 16px; height: 16px; line-height: 16px; text-align: center; color: #c8b98a; font-size: 14px; cursor: pointer; }
+.content .pencil:hover { color: #fff; text-shadow: 0 0 4px rgba(255, 209, 0, .8); }
+.content .catline .ck { width: 16px; color: #ffd100; font-size: 13px; text-align: center; }
+/* items with default alternatives (user 2026-11-10): icon of the first alternative after the name
+   (= line.alt in Options.lua: 12x12, 3 px after the text) */
+.content .catline .am { flex: none; width: 12px; height: 12px; margin-left: -1px; background-size: cover; box-shadow: 0 0 0 1px #000; pointer-events: none; }
+.content .sep { height: 1px; background: rgba(255,255,255,.15); }
+.content .menu { position: absolute; z-index: 20; background: rgba(12, 12, 18, .97); border: 1px solid #6c6c80; border-radius: 4px; padding: 6px 8px; display: none; width: 332px; }
+.content .menu .col { display: inline-block; vertical-align: top; width: 156px; }
+.content .menu .h { color: var(--gold); font-size: 11px; margin: 2px 4px 4px; }
+.content .menu .it { font-size: 11px; color: #fff; padding: 2px 4px; cursor: pointer; }
+.content .menu .it:hover, .content .menu .it.sel { background: rgba(255, 209, 0, .18); }
+/* heading line in a choice menu (2026-11-20, alarm sounds; = o.header in CreateChoiceButton, GameFontNormalSmall) */
+.content .menu .hd { font-size: 10px; color: #ffd100; padding: 4px 4px 1px; cursor: default; }
+.dragicon { position: fixed; z-index: 200; width: 30px; height: 30px; pointer-events: none; opacity: .85; display: none; transform: translate(-50%, -50%); }
+.dragicon .hint { position: absolute; top: 32px; left: 50%; transform: translateX(-50%); white-space: nowrap; font: 600 11px "Segoe UI", sans-serif; text-shadow: 1px 1px 0 #000; }
+.viewtabs button { min-width: 180px; }
+
+/* ---------- Profiles (proposal) ---------- */
+.content .pname { overflow: hidden; text-overflow: ellipsis; }
+.content .pname .pmod { color: #ff9933; }
+.content .pname .pnone { color: var(--grey); }
+.content .dlg-shade { position: absolute; inset: 0; background: rgba(0, 0, 0, .55); z-index: 40; }
+.content .dlg { position: absolute; z-index: 41; background: var(--frame-bg); border: 2px solid var(--frame-border); border-radius: 4px; box-shadow: 0 6px 24px rgba(0, 0, 0, .7); }
+.content .dlg-title { position: absolute; left: 0; right: 0; top: 0; height: 22px; line-height: 21px; text-align: center; color: #fff; background: linear-gradient(#3a3020, #1d180f); border-bottom: 1px solid var(--frame-border); }
+.content .dlg-x { position: absolute; right: 3px; top: 2px; width: 17px; height: 17px; background: #7a1a10; color: #fff; border: 1px solid #000; font-size: 11px; line-height: 14px; text-align: center; cursor: pointer; }
+.content .dlg.popup { padding: 16px 16px 12px; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.content .dlg.popup .ptext { color: #fff; text-align: center; white-space: pre-line; }
+.content .dlg.popup .pnote { color: var(--grey); font-size: 11px; text-align: center; }
+.content .dlg.popup .pbtns { display: flex; gap: 8px; }
+.content textarea.wtext { width: 100%; height: 90px; background: #0a0a0a; border: 1px solid #555; border-radius: 2px; color: #ddd; font: 11px/1.3 Consolas, monospace; padding: 4px; resize: none; user-select: text; word-break: break-all; }
+.content .plist { background: rgba(0, 0, 0, .3); overflow: hidden; }
+.content .pline { height: 20px; display: flex; align-items: center; gap: 6px; padding: 0 6px; font-size: 12px; color: #fff; cursor: pointer; }
+.content .pline:hover { background: rgba(255, 209, 0, .15); }
+.content .pline.sel { background: rgba(255, 209, 0, .12); }
+.content .pline.sel .nm { color: var(--gold); }
+.content .pline .nm { flex: 1; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.content .pline .cls { color: var(--grey); font-size: 11px; }
+.content .pline .cur { color: #66ff66; font-size: 11px; }
+.content .pline .cur.own { color: #78bfff; } /* = |cff78bfff in OptionsProfiles.lua */
+.content .pempty { white-space: pre-line; }
+.content .pempty { color: #777; font-size: 12px; text-align: center; padding: 80px 12px 0; }
+.content .pinfo { color: #fff; white-space: normal; font-size: 12px; line-height: 1.45; }
+.content .pinfo .n { color: var(--gold); font-size: 13px; }
+.content .pinfo .d { color: var(--grey); font-size: 11px; }
+.content .pinfo .warn { color: #ff9933; font-size: 11px; margin-top: 4px; }
+.content .lbl.note { color: var(--grey); font-size: 11px; white-space: normal; }
+
+/* ---------- Page "Info" (2026-11-20, = OptionsInfo.lua): three columns, blocks one below the other ---------- */
+.content .infocol { font-size: 11px; line-height: 1.4; color: #fff; }
+.content .infocol .ihdr { display: flex; gap: 8px; align-items: center; margin-bottom: 4px; }
+.content .infocol .ititle { color: var(--gold); font-size: 16px; }
+.content .infocol .isub { color: var(--grey); font-size: 11px; }
+.content .infocol .ihead { color: var(--gold); font-size: 13px; margin-top: 14px; margin-bottom: 3px; padding-bottom: 2px; border-bottom: 1px solid rgba(255, 209, 0, .35); }
+.content .infocol .ipair { margin-bottom: 2px; }
+.content .infocol .ipair .k { color: var(--gold); }
+.content .infocol .itext { margin-bottom: 4px; }
+.content .infocol .idim { color: var(--grey); }
+.content .infocol .icap { color: #66ff66; }
+.content .infocol .inforeport { position: relative; margin-top: 6px; }
+/* addon logo in the header (2026-11-21, = LOGO_SIZE in OptionsInfo.lua) */
+.content .infocol .ilogo { width: 80px; height: 80px; border: 1px solid #000; }
+.content .ihdr .ititle { white-space: nowrap; }
+
+/* ---------- Buffs (proposal 2026-11-09) ---------- */
+.cb-btn.lost .border { animation: lostblink .5s steps(2) infinite; }
+@keyframes lostblink { 0% { background: rgb(255, 40, 40); } 50% { background: rgb(90, 0, 0); } }
+.cb-extra { position: absolute; left: 0; }
+.cb-counter { position: absolute; left: 0; top: 0; height: 16px; white-space: nowrap; font: 600 11px/16px "Segoe UI", sans-serif; text-shadow: 1px 1px 0 #000; color: #ddd; cursor: default; }
+.cb-counter.l4 { color: #ffd100; } .cb-counter.l3 { color: #ffb030; } .cb-counter.l2 { color: #ff8a1e; }
+.cb-counter.l1 { color: #ff5a46; } .cb-counter.l0 { color: #ff3030; }
+/* row "Unerwünschte Buffs" (2026-11-10): click anywhere in it removes all (= secure macro button in Bar.lua) */
+.cb-unwrow { position: absolute; cursor: pointer; } /* framed like a button: .s-button below (2026-11-11) */
+/* option "Trenner anzeigen" (2026-11-14, = f.sep in Bar.lua): line on the docked side of a group, debuffs red */
+.cb-sep { position: absolute; background: rgba(160, 160, 170, .5); pointer-events: none; display: none; }
+.cb-sep.deb { background: rgba(255, 89, 89, .45); }
+.cb-unwrow .cb-other { cursor: default; } /* own right-click since 2026-11-11, only the X removes all */
+@keyframes unwpulse { 50% { outline-color: #700; } }
+.cb-other { position: absolute; cursor: default; }
+.cb-other .icon { position: absolute; inset: 0; }
+.cb-other .border { position: absolute; inset: calc(-1 * var(--bw, 1px)); background: var(--bc-other, #555); }
+.cb-other.unw .border { background: var(--bc-unwanted, #ff3030); }
+/* "Unerwünschte Buffs" framed like a button (user 2026-11-11, = extra.unwBox in Bar.lua) */
+.cb-unwrow { transition: background .12s, box-shadow .12s; }
+.cb-unwrow.s-button { background: linear-gradient(#3a2a10, #1a1208); box-shadow: 0 0 0 3px #22180a, 0 0 0 4px #8a6d1f; border-radius: 2px; }
+.cb-unwrow.s-button:hover:not(:has(.cb-other:hover)) { box-shadow: 0 0 0 3px #3a1010, 0 0 0 4px #ff4040; }
+.cb-unwrow .hint { position: absolute; top: 0; display: grid; place-items: center; color: #ff6060; font: 700 13px/1 "Segoe UI", sans-serif; }
+.cb-preview { position: absolute; left: -3px; top: 17px; border: 1px dashed rgba(26, 153, 255, .8); display: none; pointer-events: none; }
+.cb-preview.show { display: block; }
+.cb-ph { position: absolute; left: 0; top: 0; box-sizing: border-box; border: 1px dashed rgba(26, 153, 255, .55); background: rgba(26, 153, 255, .08); color: rgb(120, 190, 255); font: 600 10px/1 "Segoe UI", sans-serif; text-shadow: 1px 1px 0 #000; white-space: nowrap; display: flex; align-items: center; justify-content: center; pointer-events: none; }
+.cb-preview.open.up { border-bottom: 1px dashed rgba(26, 153, 255, .8); border-top: none; -webkit-mask-image: linear-gradient(to top, #000 45%, transparent); mask-image: linear-gradient(to top, #000 45%, transparent); }
+.cb-preview.open:not(.up) { border-bottom: none; -webkit-mask-image: linear-gradient(#000 45%, transparent); mask-image: linear-gradient(#000 45%, transparent); }
+.cb-preview .ph { position: absolute; border: 1px dashed rgba(26, 153, 255, .55); background: rgba(26, 153, 255, .08); }
+.cb-preview .pl { position: absolute; right: 0; top: -15px; font: 600 10px/1 "Segoe UI", sans-serif; color: rgb(120, 190, 255); text-shadow: 1px 1px 0 #000; white-space: nowrap; }
+/* debuffs behind "Sonstige" (2026-11-09): red, label on the far side */
+.cb-preview.deb { border-color: rgba(255, 51, 51, .8); }
+.cb-preview.deb .ph { border-color: rgba(255, 51, 51, .55); background: rgba(255, 51, 51, .08); }
+.cb-preview.deb .pl { color: rgb(255, 133, 133); top: auto; bottom: -15px; }
+.cb-preview.deb.up .pl { top: -15px; bottom: auto; }
+.cb-preview.ar .pl { right: auto; left: 0; }
+.cb-other .timer { position: absolute; left: 50%; transform: translateX(-50%); top: 1px; padding: 1px 2px; white-space: nowrap; background: rgba(0,0,0,.55); text-align: center; font: 600 10px/1 "Segoe UI", sans-serif; color: #fff; text-shadow: 1px 1px 0 #000, -1px -1px 0 #000; } /* inside the icon like the rows since 2026-11-12 (before below) */
+.content .wbtn.tab { color: var(--grey); }
+.content .wbtn.tab.on { color: var(--gold); border-color: var(--gold); }
+.content .catline .ck.unw { color: #ff4040; }
+/* places of a row in the grid (2026-11-16): every place of the group dashed, the separator of a split row an X */
+.content .grid-area .scell { position: absolute; width: 22px; height: 22px; box-sizing: border-box; border: 1px dashed rgba(255,255,255,.18); pointer-events: none; }
+/* separator of a split row: yellow line between the halves (session 20, user; before an X on its own place) */
+/* SEP_HIT px wide to grab it (session 20: draggable), the line itself 2 px in the middle */
+.content .grid-area .ssep { position: absolute; width: 10px; height: 24px; cursor: ew-resize; z-index: 3; }
+.content .grid-area .ssep::before { content: ""; position: absolute; left: 3.5px; top: 0; width: 3px; height: 24px; background: #ffd100; } /* 2 px until the second in-game test */
+.content .grid-area .ssep:hover::before, .content .grid-area .ssep.drag::before { background: #fff3a0; box-shadow: 0 0 4px #ffd100; }
+/* a gap of empty places (2026-11-18): yellow frame around them, the look of the separator in grey in its middle */
+.content .grid-area .ssep.box { top: 1px !important; height: 22px; box-sizing: border-box; border: 1px solid rgba(255, 209, 0, .75); background: rgba(255, 209, 0, .06); }
+.content .grid-area .ssep.box::before { display: none; }
+.content .grid-area .ssep.box:hover { border-color: #fff3a0; background: rgba(255, 209, 0, .14); }
+.content .grid-area .ssep.box .mini { position: absolute; background: #c8c8d2; pointer-events: none; }
+/* rows of a group on its Layout tab (2026-11-16): grip, places, checkbox "Split row", eye, "-"; active row gold */
+.content .sstack .sline { position: absolute; left: 0; right: 0; cursor: pointer; border-radius: 2px; }
+.content .sstack .sline:hover { background: rgba(255,255,255,.04); }
+.content .sstack .sline.sel { background: rgba(255,209,0,.10); box-shadow: inset 0 0 0 1px rgba(255,209,0,.30); }
+/* drop gap of a dragged row (2026-11-16, user): 2 px on the border between two lines, above the icons (they hid it
+   before, except 1 px) = line.drop on line.dropF in OptionsRowStack.lua */
+.content .sstack .sline.drop::after, .content .sstack .sline.dropup::after {
+  content: ""; position: absolute; left: 0; right: 0; height: 2px; background: #40ff40; z-index: 4; pointer-events: none; }
+.content .sstack .sline.drop::after { bottom: -1px; }
+.content .sstack .sline.dropup::after { top: -1px; }
+.content .sstack .sline.off .sitm { opacity: .4; }
+.content .sstack .sgrip { position: absolute; top: 3px; width: 12px; height: 18px; color: #9a9aa8; font: 14px/18px sans-serif; text-align: center; cursor: grab; }
+.content .sstack .sgrip:hover { color: #ffd100; }
+.content .sstack .scb { position: absolute; top: 4px; width: 14px; height: 14px; box-sizing: border-box; border: 1px solid #8a8a96; background: #111;
+  color: #ffd100; font: bold 11px/12px sans-serif; text-align: center; cursor: pointer; }
+/* separator choice of a row (2026-11-17): the look as text in the box, empty = not split */
+.content .sstack .ssepbtn { width: 28px; height: 16px; top: 3px; overflow: hidden; }
+.content .sstack .ssepbtn.on { border-color: #ffd100; }
+.content .sstack .ssepbtn:hover { border-color: #fff3a0; }
+.content .menu.sepmenu { width: auto; min-width: 132px; white-space: nowrap; padding: 4px 6px; }
+.content .menu.sepmenu .sym { display: inline-block; position: relative; width: 28px; height: 14px; margin-right: 6px; vertical-align: -3px; }
+/* headings "Alignment" / "Separator" in the menu, "Both sides" greyed for a normal row (2026-11-18) */
+.content .menu.sepmenu .hd { font-size: 10px; color: #9a9aa6; padding: 3px 4px 1px; }
+.content .menu.sepmenu .it.dis { color: #6a6a72; cursor: default; background: none; }
+.content .menu.sepmenu .it.dis .mini { background: #6a6a72; }
+/* small drawing of a separator look (2026-11-17, second in-game test) */
+.content .ssepbtn .mini, .content .sepmenu .mini { position: absolute; background: #ffd100; pointer-events: none; }
+.cb-rsep { position: absolute; pointer-events: none; z-index: 2; }
+.content .sstack .seye { position: absolute; top: 3px; width: 16px; font-size: 12px; line-height: 18px; text-align: center; cursor: pointer; }
+.content .sstack .seye.off { opacity: .3; filter: grayscale(1); }
+.content .sstack .sdel { position: absolute; top: 3px; width: 14px; height: 16px; color: #ff6060; font: bold 15px/15px sans-serif; text-align: center; cursor: pointer; }
+.content .sstack .sdel:hover { color: #ff2020; }.page.splitrow .rowgrid { display: none !important; }

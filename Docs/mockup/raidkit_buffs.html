@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RaidKit Buffs Mockup</title>
+<!--
+  Interactive preview of RaidKit Buffs 0.6.0 (bar + options).
+  Mirrors layout and logic of Bar.lua / Options.lua / Auras.lua / Data.lua:
+  - options content 660x605 with the same Place(x, y) coordinates as Options.lua
+  - drag & drop as in game: catalog -> row, reorder within the row, drag out = remove, reorder rows
+  - icon states, use mode (Ctrl+click / click / off), combat-safe rebuild
+  Icons are loaded from Wowhead (wow.zamimg.com), like many fan sites do.
+  Layout in css/raidkit_buffs.css, code in js/ (one file per Lua counterpart, load order in js/boot.js).
+  CATALOG (js/data.js) is generated from Data.lua: tools\sync-mockup-catalog.ps1
+-->
+<link rel="stylesheet" href="css/raidkit_buffs.css">
+</head>
+<body>
+<!-- page texts (2026-11-14, user): English in the HTML, German from PAGE_DE (data-p = key); the dropdown top right
+     switches the whole page, the game texts too (?lang=) -->
+<header>
+  <div class="pagehead">
+    <h1>RaidKit Buffs – Mockup 0.8.2</h1>
+    <label class="pagelang"><span data-p="Language">Language</span>
+      <select id="pageLang"><option value="en">English</option><option value="de">Deutsch</option><option value="fr">Français</option><option value="es">Español</option></select>
+    </label>
+  </div>
+  <details class="pagehelp" id="pageHelp" open><summary data-p="How to use the mockup">How to use the mockup</summary>
+  <p class="hint" data-p="intro">Bar icon: <kbd>Ctrl</kbd>+click = use (default, can be switched off in the options), right-click = remove the buff (simulates <kbd>/cancelaura</kbd>). <kbd>Shift</kbd>+drag = move, <kbd>Shift</kbd>+right-click = options.
+    Options: drag items from the catalog into the row, reorder them in the row, drag them out or right-click = remove.
+    Rows: + = empty row or template, ->+ = copy row, eye = show/hide in the bar. Rename with the pencil or a double-click. Simulated class: Warrior.</p>
+  <p class="hint" data-p="profiles"><b>Profiles:</b> The character always edits its own settings. "Save as ..." creates a named copy, "Load" copies a saved profile (all of it or only rows/appearance) into them. The position of the bar belongs to the character and is never saved or loaded. To try it: "Create example profiles".</p>
+  <p class="hint" data-p="groups"><b>Groups:</b> "+ Group" in the row list creates an empty group next to the first group (shown as a placeholder while editing); drag rows onto a group header (and back). Click on the header = group settings (frame, names, buff cap tint, orientation, size). With the window open, drag the icons of a group on the bar (otherwise Shift+drag): close to another group it snaps (green outline) and moves along with it from then on. "Unwanted Buffs", "Other Buffs" and "Debuffs" are groups of their own (end of the row list): with the window open they show as a preview box even when empty and can be dragged; otherwise they disappear without content and whatever hangs on them moves up.</p>
+  <p class="hint" data-p="buffs"><b>Buffs:</b> Every row takes consumables and buffs from others (the catalog tabs only switch the list). Buff icons (e.g. in World Buffs, Raid Buffs) are gray or colored; you cannot use them (exception: your own class buffs such as Battle Shout). <b>Buff cap:</b> from 4 free slots the background of the bar turns yellow, then orange, at 1 red. Below the bar: <b>Unwanted Buffs</b> (click on the X removes all, in combat too), <b>Other Buffs</b> with all other active buffs and the <b>Debuffs</b>.
+    To try it: "Raid situation", then "Procs" a few times. At the cap the oldest buff drops off, except flask, Zanza and world buffs; a lost consumable flashes red and reports in the chat.</p>
+  </details>
+</header>
+
+<section>
+  <div class="toolbar">
+    <button id="btnCombat" data-p="Combat: off">Combat: off</button>
+    <button id="btnAllOn" data-p="All buffs active">All buffs active</button>
+    <button id="btnAllOff" data-p="Remove all buffs">Remove all buffs</button>
+    <button id="btnRaid" data-p="Raid situation">Raid situation</button>
+    <button id="btnProcs">Procs</button>
+    <button id="btnMount" data-p="Mount">Mount</button>
+    <button id="btnZone" data-p="Zone: world">Zone: world</button>
+    <button id="btnVersion" data-p="Version: Era (cap 32)">Version: Era (cap 32)</button>
+    <button id="btnDebuff">Debuffs</button>
+    <button id="btnWf" data-p="Windfury: off">Windfury: off</button>
+    <button id="btnOffhand" class="on" data-p="Off hand: weapon">Off hand: weapon</button>
+    <span class="sep"></span>
+    <button id="btnGroup" class="on" data-p="Group: Raid">Group: Raid</button>
+    <button id="btnOptOpen" data-p="Options window: closed">Options window: closed</button>
+    <span class="sep"></span>
+    <button id="btnRefill" data-p="Fill bags">Fill bags</button>
+    <button id="btnEmpty" data-p="Empty bags">Empty bags</button>
+    <span class="sep"></span>
+    <button id="btnFast" data-p="Time: 1×">Time: 1×</button>
+    <button id="btnReset" data-p="Reset mockup">Reset mockup</button>
+    <span class="sep"></span>
+    <button id="btnExamples" data-p="Create example profiles">Create example profiles</button>
+  </div>
+  <div class="screen" id="screen">
+    <div class="combat-badge" data-p="In combat">In combat</div>
+    <div class="minimap"><span>Minimap</span></div>
+    <div class="bufffake" id="bufffake"></div>
+    <div class="chat" id="chat"></div>
+    <div class="cb-container" id="bar"></div>
+    <div class="flash" id="flash"></div>
+  </div>
+</section>
+
+<section>
+  <div class="toolbar viewtabs">
+    <button id="viewWindow" class="on" data-p="Own window (/rkb)">Own window (/rkb)</button>
+    <button id="viewSettings" data-p="Esc → Options → AddOns">Esc → Options → AddOns</button>
+  </div>
+  <div class="host-wrap">
+    <div class="window" id="hostWindow">
+      <div class="titlebar"></div><div class="titleicon"></div><div class="titletext">RaidKit - Buffs &amp; Consumables</div><div class="titlever">Version 0.8.2</div><div class="close">x</div>
+    </div>
+    <div class="settings" id="hostSettings" style="display:none">
+      <div class="head" data-l="Options">Options</div>
+      <div class="cats">
+        <div class="h" data-l="Game">Game</div><div data-l="Controls">Controls</div><div data-l="Interface">Interface</div><div data-l="Graphics">Graphics</div>
+        <div class="h" data-l="AddOns">AddOns</div><div>Leatrix Plus</div><div class="on">RaidKitBuffsConsumables</div><div>Questie</div>
+      </div>
+      <div class="canvas" id="canvas">
+        <div class="blizz-title">RaidKit - Buffs &amp; Consumables</div>
+        <div class="blizz-text" data-l="The options have their own window (also via /rkb or /rkbc).">The options have their own window (also via /rkb or /rkbc).</div>
+        <div class="blizz-btn" id="openOptions" data-l="Open RaidKit - Buffs &amp; Consumables">Open RaidKit - Buffs &amp; Consumables</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="side">
+    <div class="panel">
+      <h2 data-p="Bags (real items, drag &amp; drop)">Bags (real items, drag &amp; drop)</h2>
+      <p class="hint" data-p="bagsHint">Drag an item into a row of the options, like from a bag in the game. Also contains an item that is not in the catalog.</p>
+      <div class="bag" id="bag"></div>
+    </div>
+  </div>
+</section>
+
+<div class="tooltip" id="tip"></div>
+<div class="dragicon ic" id="dragicon"><div class="hint"></div></div>
+
+<!-- scripts: js/boot.js loads locale.js, then the parts in js/ (list there) -->
+<script src="js/locale.js"></script>
+<script src="js/boot.js"></script>
+</body>
+</html>
