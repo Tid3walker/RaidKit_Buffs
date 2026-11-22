@@ -85,12 +85,12 @@ function localizeStatic() {
 }
 // language of the whole page (2026-11-14, user; before a button "Sprache: ..." in the toolbar that cycled): dropdown
 // top right, default English. Reloads the page with ?lang=, other parameters (class=...) stay.
-// page help above the toolbar can be folded (2026-11-22, user); this browser remembers it (only a convenience, the page
-// works without storage)
+// page help above the toolbar can be folded (2026-11-22, user); folded at first (user, same day), this browser remembers
+// an opened one (only a convenience, the page works without storage)
 function setupPageHelp() {
   const d = document.getElementById("pageHelp"), KEY = "rkbMockupHelpOpen";
   if (!d) return;
-  try { if (localStorage.getItem(KEY) === "0") d.open = false; } catch (e) { /* storage blocked */ }
+  try { if (localStorage.getItem(KEY) === "1") d.open = true; } catch (e) { /* storage blocked */ }
   d.addEventListener("toggle", () => { try { localStorage.setItem(KEY, d.open ? "1" : "0"); } catch (e) { /* ignore */ } });
 }
 function setupPageLang() {
