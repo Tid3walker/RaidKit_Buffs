@@ -1,3 +1,5 @@
+<p align="center"><img src="https://raw.githubusercontent.com/Tid3walker/RaidKit_Buffs/gh-pages/Assets/Logos/RaidKit_Buffs%20-%20v1%20-%20400x400.jpg" width="400" height="400" alt="RaidKit - Buffs & Consumables logo"></p>
+
 # RaidKit - Buffs & Consumables
 
 **See which consumables and buffs are missing, and how close you are to the 32-buff limit.**
