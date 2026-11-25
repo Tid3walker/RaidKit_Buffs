@@ -106,7 +106,7 @@ ns.ROW_TEMPLATES = {
         } },
         -- rows with foreign buffs: negative IDs = ns.BUFFS below; buffs of the other faction are dropped (since 2026-11-11 every row may mix both kinds)
         -- world buffs in the order of the user (2026-11-10): Songflower, Rend, Ony, ZG, Fengus, Mol'dar, DMF
-        { key = "world", name = L["World Buffs"], visible = 3, splitLast = 1, sepStyle = "icon", items = {
+        { key = "world", name = L["World Buffs"], visible = 3, splitLast = 2, sepStyle = "icon", items = {
             -15366, -- Songflower Serenade
             -16609, -- Warchief's Blessing
             -22888, -- Rallying Cry of the Dragonslayer
@@ -114,6 +114,7 @@ ns.ROW_TEMPLATES = {
             -22817, -- Fengus' Ferocity
             -22818, -- Mol'dar's Moxie
             -23768, -- Sayge's Dark Fortune of Damage
+            -990032, -- Buff counter (user 2026-11-25: left of the Chronoboon, right of the separator)
             -349981, -- Supercharged Chronoboon Displacer (user 2026-11-17: at the end)
         } },
         { key = "raid", name = L["Raid Buffs"], visible = 2, splitLast = 1, sepStyle = "icon", items = { -- Amplify Magic right
@@ -184,8 +185,9 @@ local function Join(a, b)
 end
 local function BuffRows(world, raid)
     return {
-        -- + Chronoboon at the end (2026-11-17), separated on the right (user 2026-11-19)
-        { key = "world", name = L["World Buffs"], visible = 3, splitLast = 1, sepStyle = "icon", items = Join(Join(WORLD_COMMON, world), { -349981 }) },
+        -- + Chronoboon at the end (2026-11-17), separated on the right (user 2026-11-19); the buff counter left of it,
+        -- also right of the separator (user 2026-11-25)
+        { key = "world", name = L["World Buffs"], visible = 3, splitLast = 2, sepStyle = "icon", items = Join(Join(WORLD_COMMON, world), { -990032, -349981 }) },
         -- like the warrior's row (user 2026-11-20): Amplify Magic separated on the right
         { key = "raid", name = L["Raid Buffs"], visible = 2, splitLast = 1, sepStyle = "icon", items = Join(raid, { -10170 }) },
         -- "Situativ" removed 2026-11-18 (user): SITU_COMMON is part of "Schutz" (ConsumableRows)

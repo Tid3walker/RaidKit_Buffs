@@ -161,6 +161,7 @@ const btnKey = (b) => b.dataset.key;
 function onBarClick(e, b) {
   if (e.shiftKey) return;
   const en = b._entry;
+  if (itemInfo(entMain(en)).counter) return; // buff counter: no click at all (2026-11-25)
   if (barLayout.useMode === "ctrl" && e.ctrlKey) {
     if (isWeaponEntry(en)) return useWeapon(en);
     if (sim.combat && sim.locked.has(btnKey(b))) return flash(L("Flask/Zanza was active at the pull - locked until combat ends"));
@@ -205,6 +206,7 @@ function useWeapon(en) {
 function onBarRightClick(e, b) {
   e.preventDefault();
   if (e.shiftKey) { hideTip(); return document.getElementById("viewWindow").scrollIntoView({ behavior: "smooth" }); }
+  if (itemInfo(entMain(b._entry)).counter) return; // buff counter: removes nothing (2026-11-25)
   // weapon: no removal (CancelItemTempEnchantment is risky for addons, PitBull avoids it too)
   if (isWeaponEntry(b._entry)) return flash(L("Weapon enchants cannot be removed here")); // mockup-only text
   // demo (2026-11-10): no right-click macro at all (= ApplyUseMode in Bar.lua), real potions stay; an icon the demo

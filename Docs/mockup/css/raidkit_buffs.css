@@ -103,7 +103,7 @@ kbd { background: #2b2d35; border: 1px solid #444; border-radius: 3px; padding: 
 .cb-mover.show.edit::after, .cb-mover.show.mouse::after { content: ""; position: absolute; inset: -6px; }
 /* no lines around the placeholders (session 4b, user: why a second frame inside the group?) */
 .cb-preview, .cb-preview.open.up, .cb-preview.open:not(.up), .cb-preview .ph { border-color: transparent !important; }
-.cb-area .cb-other, .cb-area .cb-unwrow, .cb-area .cb-counter { z-index: 1; } /* above the outline that takes the mouse */
+.cb-area .cb-other, .cb-area .cb-unwrow { z-index: 1; } /* above the outline that takes the mouse */
 .cb-btn { z-index: 1; }
 
 .tooltip { position: fixed; z-index: 100; pointer-events: none; background: rgba(8, 8, 20, .95); border: 1px solid #6c6c80; border-radius: 4px; padding: 6px 8px; font-size: 12px; min-width: 190px; max-width: 290px; display: none; }
@@ -258,7 +258,6 @@ kbd { background: #2b2d35; border: 1px solid #444; border-radius: 3px; padding: 
 .content .rowlist .rowline.cat .pencil, .content .rowlist .rowline.cat .eye { visibility: hidden; }
 .content .rowlist .rowline.grp, .content .rowlist .rowline.sub { margin-left: 8px; }
 .page.unwmode .notunw, .page.debuffmode .notdebuff { display: none !important; }
-body.nocap .caponly { display: none !important; } /* only with a buff cap (Era), 2026-11-21 */
 .page:not(.grpmode) .grppanel { display: none !important; }
 /* style tabs (proposal 2026-11-14): only for "Alle Gruppen" and groups; on Frame/Separator/Icon borders the layout
    elements of the middle column are hidden, only the panel of the chosen tab is shown */
@@ -371,9 +370,13 @@ body.nocap .caponly { display: none !important; } /* only with a buff cap (Era),
 .cb-btn.lost .border { animation: lostblink .5s steps(2) infinite; }
 @keyframes lostblink { 0% { background: rgb(255, 40, 40); } 50% { background: rgb(90, 0, 0); } }
 .cb-extra { position: absolute; left: 0; }
-.cb-counter { position: absolute; left: 0; top: 0; height: 16px; white-space: nowrap; font: 600 11px/16px "Segoe UI", sans-serif; text-shadow: 1px 1px 0 #000; color: #ddd; cursor: default; }
-.cb-counter.l4 { color: #ffd100; } .cb-counter.l3 { color: #ffb030; } .cb-counter.l2 { color: #ff8a1e; }
-.cb-counter.l1 { color: #ff5a46; } .cb-counter.l0 { color: #ff3030; }
+/* buff counter (2026-11-25, = B.UpdateCounterButton in Lua): used buff slots as a big number, on the bar without icon
+   and border (user: no background) */
+.cb-btn.capctr .icon, .cb-btn.capctr .border { display: none; }
+.cb-btn .capnum { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font: 800 20px/1 "Segoe UI", sans-serif; color: #fff; pointer-events: none;
+  text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000; }
+.capnum.l4 { color: #ffd100; } .capnum.l3 { color: #ffb030; } .capnum.l2 { color: #ff8a1e; }
+.capnum.l1 { color: #ff5a46; } .capnum.l0 { color: #ff3030; }
 /* row "Unerwünschte Buffs" (2026-11-10): click anywhere in it removes all (= secure macro button in Bar.lua) */
 .cb-unwrow { position: absolute; cursor: pointer; } /* framed like a button: .s-button below (2026-11-11) */
 /* option "Trenner anzeigen" (2026-11-14, = f.sep in Bar.lua): line on the docked side of a group, debuffs red */

@@ -160,14 +160,7 @@ function ns:DebugBar()
     -- every active buff (counter / buff cap): index, spell ID, name
     local parts = {}
     for _, a in ipairs(ns.auraList) do parts[#parts + 1] = a.index .. ":" .. tostring(a.spellId) .. " " .. tostring(a.name) end
-    -- buff cap detection (2026-11-09): the season "Fresh" has no cap
-    local seasonNote = ns.season and ns.NO_CAP_SEASONS[ns.season] and (" = " .. ns.NO_CAP_SEASONS[ns.season]) or ""
-    if ns.HAS_BUFF_CAP then
-        ns:Print(L["Buff cap: %s (project %s, season %s%s)"], ns.BUFF_CAP, tostring(WOW_PROJECT_ID), tostring(ns.season), seasonNote)
-    else
-        ns:Print(L["Buff cap: none (project %s, season %s%s)"], tostring(WOW_PROJECT_ID), tostring(ns.season), seasonNote)
-    end
-    ns:Print(L["Active buffs (%d%s): %s"], #ns.auraList, ns.HAS_BUFF_CAP and ("/" .. ns.BUFF_CAP) or "", table.concat(parts, ", "))
+    ns:Print(L["Active buffs (%d%s): %s"], #ns.auraList, "/" .. ns.BUFF_CAP, table.concat(parts, ", "))
     ns:Try("debug foreign icons", DebugForeignAuraIcons)
     local errors = ns:GetReportedErrors()
     if #errors > 0 then

@@ -163,8 +163,7 @@ local function RefreshRows()
         if show and content.grpNotArea[w] then show = not grp.area end
         if show and content.grpAreaOnly[w] then show = grp.area and true or false end
         -- debuffs do not count towards the buff cap: no "Buff-Limit-Färbung" there (session 4c, user)
-        -- and none at all without a buff cap (season "Fresh", user 2026-11-21: only Era needs it)
-        if show and w == content.gCapCb then show = grp.area ~= "debuff" and ns.HAS_BUFF_CAP end
+        if show and w == content.gCapCb then show = grp.area ~= "debuff" end
 
         w:SetShown(show)
         if not show and w.menu then w.menu:Hide() end

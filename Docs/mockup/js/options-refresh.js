@@ -78,9 +78,6 @@ function refreshOptions() {
   pages.rows.classList.toggle("areamode", !!(grp && grp.area));
   pages.rows.classList.toggle("unwmode", !!(grp && grp.area === "unw"));
   pages.rows.classList.toggle("debuffmode", !!(grp && grp.area === "debuff"));
-  // without a buff cap (button "Version"; user 2026-11-21): no "Buff cap tint", no alarm sound and test, on "Info" no
-  // tint/alarm legend lines and no cap explanation (.caponly; Lua: HAS_BUFF_CAP when the window is built)
-  document.body.classList.toggle("nocap", !hasCap);
   // style tabs (2026-11-14): layout or one of the style panels
   const styled = !!grp && styleTab !== "layout";
   pages.rows.classList.toggle("stylemode", styled);

@@ -60,7 +60,7 @@ window.addEventListener("mousemove", (e) => {
   const hint = dragIcon.querySelector(".hint");
   C.gridArea.classList.toggle("glow", og);
   if ((drag.from === "grid" || drag.from === "alt" || drag.from === "stack") && !og) { hint.textContent = L("Remove"); hint.style.color = "#ff4040"; }
-  else if (drag.from === "catalog" && og && curRow() && curRow().unwanted && !isBuffId(drag.itemID)) { hint.textContent = L("Buffs only"); hint.style.color = "#ff4040"; }
+  else if (drag.from === "catalog" && og && curRow() && curRow().unwanted && (!isBuffId(drag.itemID) || itemInfo(drag.itemID).counter)) { hint.textContent = L("Buffs only"); hint.style.color = "#ff4040"; }
   else if (drag.from === "catalog" && og) { const inRow = rowIndexOf(curRow(), drag.itemID) >= 0; hint.textContent = inRow ? L("Move") : L("Add"); hint.style.color = inRow ? "#ffd100" : "#40ff40"; }
   else hint.textContent = "";
 });

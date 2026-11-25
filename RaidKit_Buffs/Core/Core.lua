@@ -296,7 +296,6 @@ local function OnEvent(_, event, ...)
             events:UnregisterEvent("ADDON_LOADED")
         end
     elseif event == "PLAYER_LOGIN" then
-        ns:DetectBuffCap() -- Data.lua: the season ("Fresh" = no cap) is only known after login
         ns.MigrateAndEnsureRows() -- Migrations.lua
         ns.ready = true
         ns:BuildBar()
@@ -309,6 +308,8 @@ local function OnEvent(_, event, ...)
         events:RegisterEvent("PLAYER_REGEN_DISABLED")
         events:RegisterEvent("PLAYER_REGEN_ENABLED")
         events:RegisterEvent("PLAYER_DEAD")
+        events:RegisterEvent("ENCOUNTER_START") -- boss fight: losses of it in the chat afterwards (LossReport.lua)
+        events:RegisterEvent("ENCOUNTER_END")
         events:RegisterEvent("GROUP_ROSTER_UPDATE") -- display mode: party/raid joined or left
         events:RegisterUnitEvent("UNIT_INVENTORY_CHANGED", "player") -- weapon swapped / weapon enchant applied
         ns:UpdateAll()
@@ -330,12 +331,19 @@ local function OnEvent(_, event, ...)
     elseif event == "PLAYER_LEAVING_WORLD" then
         ns:OnLeavingWorld() -- BarVisibility.lua
     elseif event == "PLAYER_ENTERING_WORLD" or event == "GROUP_ROSTER_UPDATE" then
-        if event == "PLAYER_ENTERING_WORLD" then ns:OnEnteringWorld() end
+        if event == "PLAYER_ENTERING_WORLD" then
+            ns:OnEnteringWorld()
+            ns:Try("LossReportZone", ns.OnLossReportZone, ns) -- raid entered or left (LossReport.lua)
+        end
         ns:MountPickChanged() -- zone (AQ40) decides the mount (2026-11-19)
         ns:UpdateVisibility() -- shows/hides the bar and the Blizzard buff bar (display mode)
         ns:UpdateAll()
     elseif event == "PLAYER_DEAD" then
         ns:OnPlayerDead() -- buffs vanish on death: no loss alarm
+    elseif event == "ENCOUNTER_START" then
+        ns:OnEncounterStart(select(2, ...)) -- encounterID, encounterName, ...
+    elseif event == "ENCOUNTER_END" then
+        ns:OnEncounterEnd()
     elseif event == "BAG_UPDATE_DELAYED" or event == "BAG_UPDATE_COOLDOWN" then
         if event == "BAG_UPDATE_DELAYED" then ns:MountPickChanged() end
         ns:UpdateAll()
@@ -349,6 +357,7 @@ local function OnEvent(_, event, ...)
             ns:RequestRebuild()
         end
         ns:OnCombatEnd()
+        ns:OnLossReportCombatEnd() -- losses of a boss fight in the chat (LossReport.lua)
     end
 end
 

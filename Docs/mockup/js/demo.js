@@ -48,7 +48,7 @@ function demoAdd(list, defs, t) {
   list.push(Object.assign({}, d, { demo: true, exp: d.dur > 0 ? t + d.dur : Infinity }));
 }
 // = DemoFree() in Bar.lua: the demo never shows more buffs than the cap allows
-const demoFree = () => (hasCap ? BUFF_CAP - activeAuras(now()).length - (demo ? demo.buffs.length + demo.nRows : 0) : 99);
+const demoFree = () => BUFF_CAP - activeAuras(now()).length - (demo ? demo.buffs.length + demo.nRows : 0);
 function demoRefresh() { updateAll(); if (typeof updateDemoButton === "function") updateDemoButton(); }
 function demoTick() {
   if (!demo) return;

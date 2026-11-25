@@ -31,9 +31,9 @@ local INFO_LEGEND = {
     { "Lock", "can only be used after combat" },
     { "Red border", "unwanted buff" },
     { "MH / OH", "weapon enchant on the main hand / off hand" },
-    -- cap = only with a buff cap (Era; user 2026-11-21): the tint and the loss alarm do not exist elsewhere
-    { "Yellow, orange, red bar", "few free buff slots: yellow from 4, red at 1", cap = true },
-    { "Blinking red", "a consumable vanished early (buff cap?), with chat line and sound", cap = true },
+    { "Number in a row", "used buff slots (buff counter, from the buff catalog)" },
+    { "Yellow, orange, red bar", "few free buff slots: yellow from 4, red at 1" },
+    { "Blinking red", "a consumable vanished early (buff cap?), with chat line and sound" },
 }
 local INFO_COMMANDS = {
     { "/rkb, /rkbc", "open or close these options" },
@@ -60,7 +60,7 @@ end
 local function PairText(list)
     local lines = {}
     for _, p in ipairs(list) do
-        if ns.HAS_BUFF_CAP or not p.cap then lines[#lines + 1] = "|cffffd100" .. L[p[1]] .. "|r: " .. L[p[2]] end
+        lines[#lines + 1] = "|cffffd100" .. L[p[1]] .. "|r: " .. L[p[2]]
     end
     return table.concat(lines, "\n")
 end
@@ -105,7 +105,7 @@ local function ErrorReport()
     local lines = {
         "RaidKit Buffs " .. tostring(Meta("Version")),
         ("Client: %s (%s), %s, project %s"):format(tostring(version), tostring(build), GetLocale(), tostring(WOW_PROJECT_ID)),
-        ("Class: %s, buff cap: %s"):format(select(2, UnitClass("player")) or "?", ns.HAS_BUFF_CAP and ns.BUFF_CAP or "none"),
+        ("Class: %s, buff cap: %s"):format(select(2, UnitClass("player")) or "?", ns.BUFF_CAP),
         ("Groups: %d, rows: %d, saved profiles: %d"):format(groups, #(prof.rows or {}), #ns:GetProfileNames()),
         ("Errors (%d):"):format(#errors),
     }
@@ -115,12 +115,7 @@ local function ErrorReport()
 end
 
 local function RefreshInfoPage()
-    if not content.infoCap then return end
-    if ns.HAS_BUFF_CAP then
-        content.infoCap:SetText(L["Buffs on you now: %d of %d"]:format(#ns.auraList, ns.BUFF_CAP))
-    else
-        content.infoCap:SetText(L["This realm has no buff cap."])
-    end
+    if not content.infoErrors then return end
     content.infoErrors:SetText(L["Errors this session: %d"]:format(#ns:GetReportedErrors()))
 end
 
@@ -160,10 +155,7 @@ local function CreateInfoPage()
 
     -- column 2: buff cap, chat commands
     Heading(c2, "Buff cap")
-    -- without a cap only the green line below ("This realm has no buff cap.", RefreshInfoPage)
-    if ns.HAS_BUFF_CAP then Text(c2, L["Classic Era shows at most 32 buffs on you. When all slots are full, a new buff pushes another one off, consumables included. RaidKit Buffs colors the bar when slots run short and raises an alarm when a consumable vanished early. Tip: put useless buffs into \"Unwanted Buffs\" and remove them with the red X."]) end
-    content.infoCap = Text(c2, "")
-    content.infoCap:SetTextColor(0.4, 1, 0.4)
+    Text(c2, L["Classic Era shows at most 32 buffs on you. When all slots are full, a new buff pushes another one off, consumables included. RaidKit Buffs colors the bar when slots run short and raises an alarm when a consumable vanished early; after a boss fight and when leaving the raid it lists what was lost. Tip: put useless buffs into \"Unwanted Buffs\" and remove them with the red X."])
     Heading(c2, "Chat commands")
     Text(c2, PairText(INFO_COMMANDS))
     Text(c2, L["Macro example: a macro with \"/rkb profile Tank\" loads that profile with one click."], "GameFontDisableSmall", 6)

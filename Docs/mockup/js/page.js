@@ -44,6 +44,7 @@ document.getElementById("btnCombat").addEventListener("click", (e) => {
   e.target.classList.toggle("on", sim.combat);
   screenEl.classList.toggle("combat", sim.combat);
   if (!sim.combat && sim.pending) requestRebuild();
+  if (!sim.combat) lossReportCombatEnd(); // losses of a boss fight in the chat (loss-report.js)
   updateMover();
 });
 document.getElementById("btnAllOn").addEventListener("click", () => {
@@ -68,14 +69,6 @@ document.getElementById("btnRaid").addEventListener("click", () => {
   applyAura(25315, 15);
   print(P("Raid situation: world buffs, consumables, raid buffs, Int/Spirit (unwanted), blessings, aura, Renew."));
   updateAll();
-});
-// game version: Era has the buff cap; realms of the season "Fresh" (same client) and other versions have none
-// (= ns:DetectBuffCap(), user 2026-11-09)
-document.getElementById("btnVersion").addEventListener("click", (e) => {
-  hasCap = !hasCap;
-  e.target.textContent = P(hasCap ? "Version: Era (cap 32)" : "Version: no buff cap");
-  e.target.classList.toggle("on", !hasCap);
-  buildBar(); updateAll(); refreshOptions(); // options without a cap hide tint, alarm sound and test (2026-11-21)
 });
 document.getElementById("btnProcs").addEventListener("click", () => {
   const pool = OTHER_SIM.filter((o) => o.proc).sort(() => Math.random() - 0.5).slice(0, 4);

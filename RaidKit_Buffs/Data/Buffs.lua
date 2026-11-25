@@ -101,8 +101,9 @@ ns.BUFFS = {
     { spells = { 24662 }, dur = 20, cat = "trinket", icon = "inv_jewelry_necklace_13", item = 19949, name = "Zandalarian Hero Medallion", note = L["Zul'Gurub: +40 damage, less with every hit (20 sec)"], tipSpell = 24661, hide = NO_MELEE_CASTER, aura = { icon = "ability_criticalstrike", name = "Restless Strength", spell = 24662 } },
     -- Devilsaur Eye: reward of a hunter-only quest (user 2026-11-20), so only hunters can have it
     { spells = { 24352 }, dur = 20, cat = "trinket", icon = "inv_misc_eye_01", item = 19991, name = "Devilsaur Eye", note = L["+150 attack power, +2% hit (20 sec)"], only = { "HUNTER" }, aura = { icon = "ability_hunter_pet_raptor", name = "Devilsaur Fury", spell = 24352 } },
-    -- Diamond Flask: reward of the warrior-only quest "Voodoo Feathers" (user 2026-11-20)
-    { spells = { 24427, 363880 }, dur = 60, cat = "trinket", icon = "inv_drink_01", item = 20130, name = "Diamond Flask", note = L["+75 Strength (1 min)"], only = { "WARRIOR" } },
+    -- Diamond Flask: reward of the warrior-only quest "Voodoo Feathers" (user 2026-11-20); the Era client gives spell
+    -- 24427 (user 2026-11-25, /rkb debug), the newer item effect 363880 is not used there
+    { spells = { 24427 }, dur = 60, cat = "trinket", icon = "inv_drink_01", item = 20130, name = "Diamond Flask", note = L["+75 Strength (1 min)"], only = { "WARRIOR" } },
     { spells = { 23725 }, dur = 20, cat = "trinket", icon = "inv_misc_gem_pearl_05", item = 19341, name = "Lifegiving Gem", note = L["Warrior: +15% max. health (20 sec)"], only = { "WARRIOR" } },
     { spells = { 23726 }, dur = 20, cat = "trinket", icon = "inv_misc_idol_03", item = 19342, name = "Venomous Totem", note = L["Rogue: +30% chance to apply poisons (20 sec)"], only = { "ROGUE" }, aura = { icon = "spell_totem_wardofdraining", name = "Venomous Totem", spell = 23726 } },
     { spells = { 24575 }, dur = 20, cat = "trinket", icon = "inv_jewelry_necklace_13", item = 19948, name = "Zandalarian Hero Badge", note = L["Zul'Gurub: +2000 armor, +30 defense, less with every hit taken (20 sec)"], tipSpell = 24574, aura = { icon = "spell_shadow_grimward", name = "Brittle Armor", spell = 24575 } },
@@ -172,6 +173,9 @@ ns.BUFFS = {
     -- right-click = /dismount. spells = { 458 } (Brown Horse) only gives the entry its ID -458, it is never matched.
     -- Not riding (2026-11-19): icon and Ctrl+click = the mount of ns:MountPick (lists below).
     { spells = { 458 }, dur = 0, cat = "misc", icon = "ability_mount_ridinghorse", name = "Mount", note = L["Any mount: active while mounted, right-click dismounts. Not mounted: Ctrl+click mounts your first 100% mount (else 60%), in AQ40 a Qiraji crystal (red first)"], mount = true },
+    -- Buff counter (user 2026-11-25): the used buff slots as a number, can go into any row (B.UpdateCounterButton).
+    -- 990032 is no spell, it only gives the entry its ID -990032 and never matches an aura.
+    { spells = { 990032 }, dur = 0, cat = "misc", icon = "spell_holy_magicalsentry", name = "Buff counter", note = L["Shows how many of the 32 buff slots are in use, colored like the bar when slots run short. Drag it into any row."], counter = true },
     -- transformations (user 2026-11-10: costumes etc. only cost a slot and can be cancelled), default in
     -- "Unerwünscht" for every class. Spell IDs and names from Wowhead Classic 2026-11-10.
     { spells = { 24708, 24709, 24710, 24711, 24712, 24713, 24723, 24732, 24735, 24736, 24740, 24741 }, dur = 3600, cat = "misc", icon = "ability_rogue_disguise", name = "Hallowed Wand Costume", note = L["Hallowed Wand: pirate, ninja, leper gnome, skeleton, bat, ghost or wisp costume"] },
@@ -240,25 +244,9 @@ function ns.SortUnwanted(list)
     for i, e in ipairs(keyed) do list[i] = e.id end
 end
 
--- Buff cap: Classic Era 32 (research 2026-11-09). Other versions without a cap get the open preview.
--- Realms of the season "Fresh" run the same client and project ID as Era but have NO buff cap (user
--- 2026-11-09, played there), so the season decides. C_Seasons is only reliable after login:
--- ns:DetectBuffCap() runs again at PLAYER_LOGIN (Core.lua). SoD and Hardcore count as Era (unchecked).
+-- Buff cap: Classic Era 32 (research 2026-11-09). RaidKit Buffs is an Era-only addon (user 2026-11-21), so the cap
+-- always applies; versions or realms without a cap are not handled (user 2026-11-25).
 ns.BUFF_CAP = 32
-ns.NO_CAP_SEASONS = {} -- season IDs without a buff cap
-if Enum and Enum.SeasonID then
-    for _, key in ipairs({ "Fresh", "FreshHardcore" }) do
-        if Enum.SeasonID[key] then ns.NO_CAP_SEASONS[Enum.SeasonID[key]] = key end
-    end
-end
-function ns:DetectBuffCap()
-    local classic = WOW_PROJECT_ID == nil or WOW_PROJECT_ID == (WOW_PROJECT_CLASSIC or 2)
-    local season = C_Seasons and C_Seasons.GetActiveSeason and C_Seasons.GetActiveSeason() or nil
-    ns.season = season
-    ns.HAS_BUFF_CAP = classic and not (season and ns.NO_CAP_SEASONS[season]) or false
-    return ns.HAS_BUFF_CAP
-end
-ns:DetectBuffCap()
 -- Debuffs the Blizzard bar shows on the player (DEBUFF_MAX_DISPLAY, 16): size of the debuff preview
 ns.DEBUFF_CAP = DEBUFF_MAX_DISPLAY or 16
 

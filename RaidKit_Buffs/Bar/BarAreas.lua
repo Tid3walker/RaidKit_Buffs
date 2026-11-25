@@ -13,7 +13,7 @@ local UpdatePreview -- defined further down
 
 ------------------------------------------------------------------------
 -- Area below the bar (proposal 2026-11-09, mockup: renderExtras / buildOtherPreview)
---   counter "Buffs n/32" and the bar's background tint by free buff slots (CapLevel, 2026-11-10)
+--   the bar's background tint by free buff slots (CapLevel, 2026-11-10) and the "Buff counter" in a row (2026-11-25)
 --   red unwanted button (secure macro "/cancelaura ...", works in combat). It is always shown (Show/Hide
 --   of a secure frame is impossible in combat) and only made visible with SetAlpha while an unwanted
 --   buff is active; a click without active unwanted buffs does nothing.
@@ -38,7 +38,70 @@ B.CapLevel = function(free)
     return CAP_LEVELS[math.max(free, 0)]
 end
 
-local COUNTER_W = 68 -- width of the counter's mouse area
+-- buff slots in use right now, demo buffs included (= the bar's tint and the buff counter; capFreeNow in the mockup)
+local function BuffsUsed()
+    local demo = ns.demo
+    return #ns.auraList + (demo and (#demo.buffs + demo.nRows) or 0)
+end
+B.BuffsUsed = BuffsUsed
+
+-- "Buff counter" in a row (user 2026-11-25, = updateCounterButton in the mockup; replaces the hidden counter
+-- "Buffs n/32" of session 4b..4c and the line on "Info"): the USED buff slots as a big number in the colour of the tint
+-- (white up to 27, then CAP_LEVELS), without icon and border. Never grey, no timer, bag count, cooldown or status mark;
+-- no secure action (UpdateSecure finds no own spell, CancelMacro returns nil). Plain widgets only: allowed in combat.
+B.UpdateCounterButton = function(btn)
+    local used = BuffsUsed()
+    local lv = B.CapLevel(ns.BUFF_CAP - used)
+    btn.itemID = ns.EntryPick(btn.entry)
+    btn.isActive, btn.expiration, btn.bagCount, btn.activeID, btn.isDemo, btn.blinking = true, nil, 0, nil, false, false
+    btn.icon:Hide()
+    btn.border:SetColorTexture(0, 0, 0, 0)
+    btn.status:Hide()
+    btn.count:Hide()
+    btn.cooldown:Clear()
+    btn.timer:SetText("")
+    local t = btn.capText
+    if not t then
+        t = btn.count:GetParent():CreateFontString(nil, "OVERLAY")
+        t:SetPoint("CENTER", btn, "CENTER", 0, 0)
+        btn.capText = t
+    end
+    local size = math.floor((btn:GetHeight() or 0) * 0.55 + 0.5)
+    if size < 8 then size = 16 end
+    if btn.capTextSize ~= size then
+        t:SetFont(STANDARD_TEXT_FONT, size, "OUTLINE")
+        btn.capTextSize = size
+    end
+    t:SetText(used)
+    if lv then t:SetTextColor(unpack(lv.text)) else t:SetTextColor(1, 1, 1) end
+    t:Show()
+end
+
+-- tooltip of the buff counter (before: of the counter "Buffs n/32"): slots, free, buffs no row shows
+B.ShowCounterTip = function(owner)
+    local cap = ns.BUFF_CAP
+    local n = BuffsUsed()
+    local free = cap - n
+    GameTooltip:SetOwner(owner, "ANCHOR_BOTTOMLEFT")
+    GameTooltip:SetText(L["Buff slots: %d of %d"]:format(n, cap))
+    local lv = B.CapLevel(free)
+    if free > 0 then GameTooltip:AddLine(L["%d free"]:format(free), lv and lv.text[1] or 0.2, lv and lv.text[2] or 1, lv and lv.text[3] or 0.2)
+    else GameTooltip:AddLine(L["Full - the next buff pushes out another one"], 1, 0.3, 0.3, true) end
+    GameTooltip:AddLine(L["From 4 free slots on the bar is tinted: yellow, orange, red at 1."], 0.6, 0.6, 0.6, true)
+    GameTooltip:AddLine(L["RaidKit Buffs does not see invisible buffs (some enchants, set bonuses)."], 0.6, 0.6, 0.6, true)
+    local covered, first = B.CoveredSet(), true
+    for _, au in ipairs(ns.auraList) do
+        if not covered[au.spellId] and not covered[au.name] then
+            if first then GameTooltip:AddLine(" ") GameTooltip:AddLine(L["Not in a row:"], 1, 1, 1) first = false end
+            GameTooltip:AddLine(au.name or "?", 0.6, 0.6, 0.6)
+        end
+    end
+    GameTooltip:AddLine(" ")
+    GameTooltip:AddLine(L["Shift+drag: move bar"], 0.6, 0.6, 0.6)
+    GameTooltip:AddLine(L["Shift+right-click: options"], 0.6, 0.6, 0.6)
+    GameTooltip:Show()
+end
+
 local OTHER_TOP = 0 -- icons of "Sonstige" start at the top (session 4b: the counter moved to the main group)
 local otherPool = {}
 
@@ -285,7 +348,6 @@ B.LayoutAreas = function()
             f.label:SetText(ns.GroupDisplayName(g))
             BS.extra = f
             if g.area == "other" then
-                B.PlaceCounter() -- first build: the counter did not exist when the main group was decorated
                 f.previewCells = nil -- layout changed: UpdatePreview lays the box out again
             elseif g.area == "unw" then
                 -- secure button over the whole possible row (only here, out of combat)
@@ -337,29 +399,25 @@ local function LayoutPreview(box, y, nLines, cells, open, kind)
 end
 
 -- Previews, fully dynamic (user 2026-11-09): "Sonstige Buffs" gets every buff slot that the rows do not use
--- RIGHT NOW: 32 minus the active buffs that a visible row shows (and the unwanted ones). Without a cap 4 lines,
--- open at the bottom. The boxes are only laid out again when the number changes (force: after LayoutAreas).
+-- RIGHT NOW: 32 minus the active buffs that a visible row shows (and the unwanted ones). The boxes are only laid out again when the number changes (force: after LayoutAreas).
 -- Debuffs: their maximum; "Unerwünscht": one cell. Plain frames: allowed in combat.
 UpdatePreview = function(force)
     local o, d, u = areaFrames.other, areaFrames.debuff, areaFrames.unw
     if not o then return end
     BS.extra = o
     local _, _, per = OtherSize(nil, o.g.id)
-    local cells = per * 4
-    if ns.HAS_BUFF_CAP then
-        local covered, used = CoveredSet(), 0
-        for _, a in ipairs(ns.auraList) do
-            if covered[a.spellId] or covered[a.name] then used = used + 1 end
-        end
-        if ns.demo then used = used + ns.demo.nRows end -- demo-active icons of the rows (2026-11-10)
-        -- unwanted buffs have their own row since 2026-11-10 (hidden row, 2026-11-12: they sit in "Sonstige" itself)
-        if not (u and u.g and u.g.hidden) then used = used + #ActiveUnwanted() end
-        cells = math.max(ns.BUFF_CAP - used, 0)
+    local covered, used = CoveredSet(), 0
+    for _, a in ipairs(ns.auraList) do
+        if covered[a.spellId] or covered[a.name] then used = used + 1 end
     end
+    if ns.demo then used = used + ns.demo.nRows end -- demo-active icons of the rows (2026-11-10)
+    -- unwanted buffs have their own row since 2026-11-10 (hidden row, 2026-11-12: they sit in "Sonstige" itself)
+    if not (u and u.g and u.g.hidden) then used = used + #ActiveUnwanted() end
+    local cells = math.max(ns.BUFF_CAP - used, 0)
     if cells ~= o.previewCells or force then
         o.previewCells = cells
         o.previewLines = math.ceil(cells / per)
-        LayoutPreview(o.preview, OTHER_TOP, math.max(o.previewLines, 1), cells, not ns.HAS_BUFF_CAP)
+        LayoutPreview(o.preview, OTHER_TOP, math.max(o.previewLines, 1), cells, false)
         o.preview.empty = cells == 0 -- every buff slot used by a row: no blue box
     end
     if force then
@@ -441,7 +499,12 @@ B.UpdateExtra = function()
     remeasure = nil -- set by MeasureArea when a rect is not there yet
     UpdatePreview() -- the blue preview follows the active buffs of the rows (2026-11-09)
     local demo = ns.demo -- demo mode (2026-11-10): fake buffs/debuffs, see ns:StartDemo
-    local n = #ns.auraList + (demo and (#demo.buffs + demo.nRows) or 0)
+    local n = BuffsUsed()
+    -- the buff counter follows every change here, also the demo's ticks, which call only UpdateExtra (user 2026-11-25:
+    -- the counter showed 28 in yellow while the tint was already red); before it was only drawn in UpdateButton
+    for _, btn in ipairs(activeButtons) do
+        if btn.isCounter then B.UpdateCounterButton(btn) end
+    end
     local pv = BS.areaPreview
     local size, sp, per, lineH = OtherSize(nil, fo.g.id)
     -- icon borders and font size of the time per area (2026-11-14, style "icon" / "Font size")
@@ -510,16 +573,9 @@ B.UpdateExtra = function()
     fu.iconTop = nU > 0 and 0 or nil -- first icon line (B.IconInset, 2026-11-15)
     MeasureArea(fu, regions, -4, uwFull + usp + 14 + 8)
 
-    -- ----- "Sonstige Buffs": counter line, then weapon enchants of hands no row covers, other buffs, demo buffs
+    -- ----- "Sonstige Buffs": weapon enchants of hands no row covers, other buffs, demo buffs
     BS.extra = fo
-    local c = fo.counter
-    local lv = ns.HAS_BUFF_CAP and B.CapLevel(ns.BUFF_CAP - n) or nil
-    if ns.HAS_BUFF_CAP then
-        c:SetText(("Buffs %d/%d"):format(n, ns.BUFF_CAP))
-    else
-        c:SetText("Buffs " .. n)
-    end
-    if lv then c:SetTextColor(unpack(lv.text)) else c:SetTextColor(0.87, 0.87, 0.87) end
+    local lv = B.CapLevel(ns.BUFF_CAP - n)
     local oTop = OTHER_TOP
     local coveredHand = {}
     for _, btn in ipairs(activeButtons) do
@@ -699,7 +755,6 @@ B.UpdateExtra = function()
 end
 
 -- shared with the other Bar*.lua files
-B.COUNTER_W = COUNTER_W
 B.otherPool = otherPool
 B.CoveredSet = CoveredSet
 B.UnwantedMacro = UnwantedMacro

@@ -32,7 +32,7 @@ function insertItem(id, pos, rowArg) { // rowArg: a row of the split stack (2026
   if (!row) return print(L("Please create a row first."));
   if (row.unwanted) {
     // unwanted list: only buffs, plain IDs (a buff already there is just moved)
-    if (!isBuffId(id)) return print(L("Only buffs can be unwanted."));
+    if (!isBuffId(id) || itemInfo(id).counter) return print(L("Only buffs can be unwanted.")); // not the buff counter
     const at = row.items.indexOf(id);
     if (at >= 0) row.items.splice(at, 1);
     else if (row.items.length >= MAX_UNWANTED) return print(fmt(L("At most %d unwanted buffs."), MAX_UNWANTED));

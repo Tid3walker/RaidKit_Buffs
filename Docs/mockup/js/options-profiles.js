@@ -233,7 +233,6 @@ function createProfilesPage(choiceButton) {
   C.controls.push(C.lossSoundBtn);
   C.lossTestBtn = withTip(Place(Button(L("Test"), 60, () => testLoss()), 290 + 236, COL_BOTTOM + 19),
     () => `<div class="w">${L("Test the loss alarm")}</div><div class="d">${L("Shows the alarm as if the buff cap had pushed off a consumable of the bar: red blinking icon, chat line, sound. No buff is removed.")}</div>`);
-  C.lossSoundBtn.classList.add("caponly"); C.lossTestBtn.classList.add("caponly"); // no alarm without a cap (2026-11-21)
 
   Page("profiles");
   Place(Label(L("Profile:")), 10, 12);

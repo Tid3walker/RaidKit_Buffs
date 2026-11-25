@@ -301,7 +301,7 @@ const BUFFS = [
   { buff: 26480, dur: 30, cat: "trinket", icon: "inv_misc_ahnqirajtrinket_04", item: 21670, name: "Badge of the Swarmguard", note: "Ahn'Qiraj: armor penetration on hits (30 sec)", hide: ["MAGE","WARLOCK","PRIEST"] },
   { buff: 24662, dur: 20, cat: "trinket", icon: "inv_jewelry_necklace_13", item: 19949, name: "Zandalarian Hero Medallion", note: "Zul'Gurub: +40 damage, less with every hit (20 sec)", hide: ["MAGE","WARLOCK","PRIEST"], aura: { icon: "ability_criticalstrike", name: "Restless Strength", spell: 24662 } },
   { buff: 24352, dur: 20, cat: "trinket", icon: "inv_misc_eye_01", item: 19991, name: "Devilsaur Eye", note: "+150 attack power, +2% hit (20 sec)", only: ["HUNTER"], aura: { icon: "ability_hunter_pet_raptor", name: "Devilsaur Fury", spell: 24352 } },
-  { buff: 24427, spells: [24427, 363880], dur: 60, cat: "trinket", icon: "inv_drink_01", item: 20130, name: "Diamond Flask", note: "+75 Strength (1 min)", only: ["WARRIOR"] },
+  { buff: 24427, dur: 60, cat: "trinket", icon: "inv_drink_01", item: 20130, name: "Diamond Flask", note: "+75 Strength (1 min)", only: ["WARRIOR"] },
   { buff: 23725, dur: 20, cat: "trinket", icon: "inv_misc_gem_pearl_05", item: 19341, name: "Lifegiving Gem", note: "Warrior: +15% max. health (20 sec)", only: ["WARRIOR"] },
   { buff: 23726, dur: 20, cat: "trinket", icon: "inv_misc_idol_03", item: 19342, name: "Venomous Totem", note: "Rogue: +30% chance to apply poisons (20 sec)", only: ["ROGUE"], aura: { icon: "spell_totem_wardofdraining", name: "Venomous Totem", spell: 23726 } },
   { buff: 24575, dur: 20, cat: "trinket", icon: "inv_jewelry_necklace_13", item: 19948, name: "Zandalarian Hero Badge", note: "Zul'Gurub: +2000 armor, +30 defense, less with every hit taken (20 sec)", aura: { icon: "spell_shadow_grimward", name: "Brittle Armor", spell: 24575 } },
@@ -362,6 +362,9 @@ const BUFFS = [
   // Mount (user 2026-11-17) = Data.lua: one entry for every mount, in the game detected by IsMounted() (ns:MountAura);
   // the mockup knows the simulated mounts of MOUNT_SIM. ID -458 (Brown Horse) only as its ID
   { buff: 458, spells: [23229, 23510, 26656, 24242, 25953, 26054, 472], dur: 0, cat: "misc", icon: "ability_mount_ridinghorse", name: L("Mount"), note: "Any mount: active while mounted, right-click dismounts. Not mounted: Ctrl+click mounts your first 100% mount (else 60%), in AQ40 a Qiraji crystal (red first)", mount: true },
+  // Buff counter (user 2026-11-25, = Data/Buffs.lua): the free buff slots as a number on an icon, can go into any row.
+  // 990032 is no spell (only gives the entry its ID -990032), it never matches an aura.
+  { buff: 990032, dur: 0, cat: "misc", icon: "spell_holy_magicalsentry", name: L("Buff counter"), note: "Shows how many of the 32 buff slots are in use, colored like the bar when slots run short. Drag it into any row.", counter: true },
   // transformations (user 2026-11-10), = Data.lua; Wowhead Classic spell IDs
   { buff: 24708, spells: [24708, 24709, 24710, 24711, 24712, 24713, 24723, 24732, 24735, 24736, 24740, 24741], dur: 3600, cat: "misc", icon: "ability_rogue_disguise", name: "Hallowed Wand Costume", note: "Hallowed Wand: pirate, ninja, leper gnome, skeleton, bat, ghost or wisp costume" },
   { buff: 24924, spells: [24924, 24925, 24926, 24927], dur: 1200, cat: "misc", icon: "inv_misc_food_59", name: "Hallow's End Candy", note: "Hallow's End candy: transformation" },
@@ -437,7 +440,6 @@ const OTHER_SIM = [
 // Era buff cap (research 2026-11-09). Rule in the simulation = working assumption of the user: at the cap
 // the oldest buff drops, but never Flask, Zanza or world buffs.
 const BUFF_CAP = 32;
-let hasCap = true; // mockup: button "Version"; in Lua from WOW_PROJECT_ID / season
 
 // = ns.FILTERS in Data.lua; the same entries are the section headers when sorted by type/stat
 const FILTERS = [
@@ -557,7 +559,7 @@ const ROW_TEMPLATES = {
     // rows with foreign buffs (negative IDs, no alternatives); buffs of the other faction are dropped. Since 2026-11-11 every
     // row takes consumables and buffs (no row kind any more)
     // order of the user (2026-11-10): Songflower, Rend, Ony, ZG, Fengus, Mol'dar, DMF
-    { name: L("World Buffs"), visible: 3, splitLast: 1, sepStyle: "icon", items: [-15366, -16609, -22888, -24425, -22817, -22818, -23768, -349981] }, // + Chronoboon (2026-11-17), right of the separator (2026-11-19)
+    { name: L("World Buffs"), visible: 3, splitLast: 2, sepStyle: "icon", items: [-15366, -16609, -22888, -24425, -22817, -22818, -23768, -990032, -349981] }, // + Chronoboon (2026-11-17), right of the separator (2026-11-19); buff counter left of it (2026-11-25)
     // order of the user 2026-11-12 (= Data.lua); Battle Shout removed 2026-11-14 (own buff, "Selbst verantwortlich")
     // Trueshot before LotP (2026-11-17), Amplify Magic at the end (2026-11-18); "Situativ" removed 2026-11-18 (user)
     { name: L("Raid Buffs"), visible: 2, splitLast: 1, sepStyle: "icon", items: [-21564, -21850, -20906, -24932, -25362, -25360, -25898, -25916, -10170] }, // Amplify Magic right (2026-11-19)
@@ -584,7 +586,7 @@ const CLASS_GROUPS = {
   };
   const SITU_COMMON = [-19900, -10535, -19898, -10477, -10599, -27683];
   const buffRows = (world, raid) => [
-    { name: L("World Buffs"), visible: 3, splitLast: 1, sepStyle: "icon", items: [...WORLD_COMMON, ...world, -349981] }, // + Chronoboon at the end (2026-11-17), separated (2026-11-19)
+    { name: L("World Buffs"), visible: 3, splitLast: 2, sepStyle: "icon", items: [...WORLD_COMMON, ...world, -990032, -349981] }, // + Chronoboon at the end (2026-11-17), separated (2026-11-19); buff counter left of it (2026-11-25)
     { name: L("Raid Buffs"), visible: 2, splitLast: 1, sepStyle: "icon", items: [...raid, -10170] }, // + Amplify Magic right (2026-11-20, = warrior)
   ]; // "Situativ" removed 2026-11-18 (user): SITU_COMMON is part of "Schutz"
   const PROTECTION = [13461, 13458, 13459, 13457, 13456];

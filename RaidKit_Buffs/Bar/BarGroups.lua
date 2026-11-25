@@ -355,38 +355,15 @@ local function PlaceEdges(edges, f, l, t, w, h)
 end
 -- box = icons and names (lw/rw = names left/right of the icons, w/h = icon block); frame padding and group name
 -- come on top. main: the tint keeps the old box (outline, 8 px around the rows).
--- counter "Buffs n/32" (session 4b): in the name line of the main group, on the side away from the group name
--- (right, or left when the rows end at the right edge)
--- Session 4c (user 2026-11-11): the place does not fit either; hidden until it becomes an option per group that the
--- user switches on himself (Roadmap). Text, colour and tooltip keep being updated.
-local SHOW_COUNTER = false
-local function PlaceCounter()
-    local f = BS.container
-    local c, hit = f and f.counter, f and f.counterHit
-    if not c or not f.box then return end
-    c:SetShown(SHOW_COUNTER)
-    hit:SetShown(SHOW_COUNTER)
-    local b = f.box
-    c:ClearAllPoints()
-    hit:ClearAllPoints()
-    if f.alignR then
-        c:SetPoint("TOPLEFT", f, "TOPLEFT", b.l, -(b.t + 1))
-        c:SetJustifyH("LEFT")
-        hit:SetPoint("TOPLEFT", c, "TOPLEFT", 0, 1)
-    else
-        c:SetPoint("TOPRIGHT", f, "TOPLEFT", b.l + b.w, -(b.t + 1))
-        c:SetJustifyH("RIGHT")
-        hit:SetPoint("TOPRIGHT", c, "TOPRIGHT", 0, 1)
-    end
-end
+-- the counter "Buffs n/32" in the main group's name line (session 4b, hidden since 4c, PlaceCounter/SHOW_COUNTER) is
+-- gone since 2026-11-25: the "Buff counter" goes into any row instead (B.UpdateCounterButton in BarAreas.lua)
 
 
 local function Decorate(f, l, t, w, h)
     local g = f.g
     local fp = ns.FrameOn(g) and FRAME_PAD or 0
     local ownName = ns.GEff(g, "showName") and not g.area -- inherits from "Alle Gruppen" (2026-11-14)
-    -- the main group keeps its name line for the counter (session 4b), only while it is shown (SHOW_COUNTER)
-    local nameH = (ownName or (f == BS.container and SHOW_COUNTER)) and GNAME_H or 0
+    local nameH = ownName and GNAME_H or 0
     -- 2026-11-15 (user, = buildGroup in the mockup): the name line lies inside the frame, the tint and the visible
     -- outline, so no part of the box is left out of the visible outline any more (VisibleOutline in BarMove.lua).
     -- Before (session 4b until 2026-11-15) the name stood above the frame and the outline left that line out.
@@ -417,7 +394,6 @@ local function Decorate(f, l, t, w, h)
     f.mover:SetPoint("TOPLEFT", f, "TOPLEFT", b.l - pad, -(b.t - pad))
     f.mover:SetSize(b.w + 2 * pad, b.h + 2 * pad)
     PlaceRect(f.capTint, f, b.l - pad, b.t - pad, b.w + 2 * pad, b.h + 2 * pad)
-    if f == BS.container then PlaceCounter() end
 end
 
 -- placeholder of an empty group (2026-11-15): text width for its size (BuildGroup), shown while not f.empty
@@ -666,7 +642,6 @@ B.IconBottomInset = IconBottomInset
 B.SlotAlign = SlotAlign
 B.LayoutGroups = LayoutGroups
 B.PlaceRect = PlaceRect
-B.PlaceCounter = PlaceCounter
 B.Decorate = Decorate
 B.PlaceholderTextWidth = PlaceholderTextWidth
 B.UpdatePlaceholder = UpdatePlaceholder

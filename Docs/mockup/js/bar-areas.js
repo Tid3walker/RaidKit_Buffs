@@ -14,13 +14,9 @@ const CAP_LEVELS = {
   1: { rgba: "rgba(255, 60, 45, .22)", cls: "l1" },
   0: { rgba: "rgba(255, 30, 30, .32)", cls: "l0" },
 };
-const capLevel = (free) => (!hasCap || free > 4) ? null : CAP_LEVELS[Math.max(free, 0)];
-function capState(t) {
-  const n = activeAuras(t).length, free = BUFF_CAP - n;
-  if (!hasCap) return { n, free: Infinity, cls: "" };
-  const lv = capLevel(free);
-  return { n, free, cls: lv ? lv.cls : "" };
-}
+const capLevel = (free) => free > 4 ? null : CAP_LEVELS[Math.max(free, 0)];
+// free buff slots right now, demo buffs included (= B.CapFree in BarAreas.lua): tint of the bar and the buff counter
+const capFreeNow = (t) => BUFF_CAP - activeAuras(t).length - (demo ? demo.buffs.length + demo.nRows : 0);
 // Preview of "Sonstige" at maximum size (shown with the Shift outline). With a buff cap (Era) everything fits:
 // ceil(32 / per line) lines, even if no row covers anything. Without a cap (other versions) the frame stays
 // open at the bottom and fades out.
@@ -91,10 +87,8 @@ function previewBox(p, id, cls, y, lines, cells, open, label, kind, areaId) {
 }
 // = PreviewCells() in Bar.lua: "Sonstige Buffs" gets every buff slot that the rows do not use RIGHT NOW (user
 // 2026-11-09, fully dynamic): 32 minus the active buffs that a visible row shows. No buff active = 32, two = 30.
-// Buffs in "Sonstige" itself do not count (they sit in these places). No cap: 4 lines.
+// Buffs in "Sonstige" itself do not count (they sit in these places).
 function previewCells(p) {
-  const { per } = otherSize(p);
-  if (!hasCap) return per * 4;
   const cov = coveredSpells();
   // unwanted buffs sit in their own row since 2026-11-10: their slots are taken, too
   return Math.max(BUFF_CAP - activeAuras(now()).filter((sp) => cov.has(sp)).length - (demo ? demo.nRows : 0) - unwantedNow().length, 0);
@@ -112,14 +106,13 @@ const activeDebuffs = (t) => DEBUFF_SIM.filter((d) => sim.debuffs[d.id] > t);
 // even when empty. Hidden groups pass their snap on, so what hangs below moves up (as before).
 function renderExtras(t) {
   if (!areaEls.other) return;
-  const p = barLayout, cs = capState(t), pv0 = !!areaPreview;
+  const p = barLayout, pv0 = !!areaPreview;
   // empty groups (placeholders, 2026-11-15) show together with the area previews (= UpdateExtra in Bar.lua)
   for (const x of groupEls) if (x.el._placeholder) x.el._hidden = !pv0;
   // eye of an area off (2026-11-12, user; = UpdateExtra in Bar.lua): not drawn, not even as preview while editing
   const hid = (a) => !!(areaEls[a] && areaEls[a]._g.hidden), pvU = pv0 && !hid("unw"), pvO = pv0 && !hid("other"), pvD = pv0 && !hid("debuff");
   // demo buffs count like real ones (= UpdateExtra in Bar.lua)
-  const nAll = cs.n + (demo ? demo.buffs.length + demo.nRows : 0), free = BUFF_CAP - nAll;
-  const lv = capLevel(free);
+  const lv = capLevel(capFreeNow(t));
   // every group with "Buff-Limit-Färbung" (2026-11-11, g.capTint) gets the same tint
   for (const x of groupEls) {
     const tt = x.el._tint, on = !!lv && x.g.area !== "debuff" && (x.g.id === "main" ? x.g.capTint !== false : x.g.capTint === true); // debuffs never (session 4c)
@@ -185,11 +178,8 @@ function renderExtras(t) {
   finishArea(areaEls.unw, au.length > 0, pvU, 0, uFull + sp + 14);
   }
 
-  // ----- "Sonstige Buffs": counter line, then weapon enchants without an icon, other buffs, demo buffs
+  // ----- "Sonstige Buffs": weapon enchants without an icon, other buffs, demo buffs
   extraEl = areaEls.other;
-  const counter = document.getElementById("cbCounter"); // in the main group's name line (session 4b)
-  counter.className = "cb-counter " + (lv ? lv.cls : "");
-  counter.textContent = hasCap ? `Buffs ${nAll}/${BUFF_CAP}` : `Buffs ${nAll}`;
   const box = extraEl.querySelector(".cb-others");
   box.innerHTML = "";
   const oTop = 0; // session 4b: no counter line any more (= OTHER_TOP in Bar.lua)
@@ -197,7 +187,7 @@ function renderExtras(t) {
   const cells = previewCells(p);
   if (cells !== extraEl._pvCells || !document.getElementById("otherPreview")) {
     extraEl._pvCells = cells; extraEl._pvLines = Math.ceil(cells / per);
-    const nb = previewBox(p, "otherPreview", "", oTop, extraEl._pvLines, cells, !hasCap, hasCap ? fmt(L("Other: %d free slots"), cells) : L("Other: no cap")); // mockup-only texts (preview title)
+    const nb = previewBox(p, "otherPreview", "", oTop, extraEl._pvLines, cells, false, fmt(L("Other: %d free slots"), cells)); // mockup-only texts (preview title)
     const old = document.getElementById("otherPreview");
     if (old) old.replaceWith(nb); else extraEl.appendChild(nb);
   }
@@ -350,17 +340,35 @@ function finishArea(el, hasContent, pv, fullX, fullW) {
     k.style.width = (b.w + 2 * pad) + "px"; k.style.height = (b.h + 2 * pad) + "px";
   }
 }
+// "Buff counter" in a row (user 2026-11-25, replaces the hidden counter "Buffs n/32" of session 4b and the line on
+// "Info"; = B.UpdateCounterButton in BarAreas.lua): the USED buff slots as a big number, colored by CAP_LEVELS like the
+// tint (white up to 27 used, then yellow ... red at 32). On the bar without icon and border (user: no background);
+// the catalog and the rows of the options show the icon.
+// Never gray, no timer, bag count, cooldown or status mark.
+function updateCounterButton(b, t) {
+  const free = Math.max(capFreeNow(t), 0), lv = capLevel(free);
+  if (b.dataset.id !== "counter") { b.dataset.id = "counter"; setIcon(b.querySelector(".icon"), entPick(b._entry)); }
+  b.classList.remove("missing", "lost", "wf");
+  b.classList.add("capctr");
+  b.querySelector(".border").style.background = `var(--bc-active, ${BORDER.active})`;
+  b.querySelector(".st").style.display = "none";
+  b.querySelector(".count").style.display = "none";
+  b.querySelector(".timer").textContent = "";
+  drawCooldown(b.querySelector(".cd"), 0, 0, t);
+  let num = b.querySelector(".capnum");
+  if (!num) { num = document.createElement("div"); b.appendChild(num); }
+  num.className = "capnum " + (lv ? lv.cls : "");
+  num.style.fontSize = Math.round((parseInt(b.style.height, 10) || 36) * 0.55) + "px"; // = SetFont(size * 0.55) in Lua
+  num.textContent = BUFF_CAP - free;
+}
+// tooltip of the buff counter (before session 4c the counter "Buffs n/32"): slots, free, buffs no row shows
 function showCounterTip(e) {
-  const t = now(), cs = capState(t), others = otherAuras(t);
-  if (!hasCap) {
-    tip.innerHTML = `<div class="n">${fmt(L("Active buffs: %d"), cs.n)}</div><div class="g">${L("This version has no buff cap.")}</div>` +
-      (others.length ? `<br><div class="w">${L("Not in a row:")}</div>` + others.map((s) => `<div class="d">${spellInfo(s).name}</div>`).join("") : "");
-    return placeTip(e);
-  }
-  tip.innerHTML = `<div class="n">${fmt(L("Buff slots: %d of %d"), cs.n, BUFF_CAP)}</div>` +
-    `<div class="${cs.free <= 1 ? "r" : cs.free <= 4 ? "y" : "g"}">${cs.free > 0 ? fmt(L("%d free"), cs.free) : L("Full - the next buff pushes out another one")}</div>` +
+  const t = now(), free = capFreeNow(t), n = BUFF_CAP - free, others = otherAuras(t);
+  tip.innerHTML = `<div class="n">${fmt(L("Buff slots: %d of %d"), n, BUFF_CAP)}</div>` +
+    `<div class="${free <= 1 ? "r" : free <= 4 ? "y" : "g"}">${free > 0 ? fmt(L("%d free"), free) : L("Full - the next buff pushes out another one")}</div>` +
     `<div class="d">${L("From 4 free slots on the bar is tinted: yellow, orange, red at 1.")}</div><div class="d">${L("RaidKit Buffs does not see invisible buffs (some enchants, set bonuses).")}</div>` +
-    (others.length ? `<br><div class="w">${L("Not in a row:")}</div>` + others.map((s) => `<div class="d">${spellInfo(s).name}</div>`).join("") : "");
+    (others.length ? `<br><div class="w">${L("Not in a row:")}</div>` + others.map((s) => `<div class="d">${spellInfo(s).name}</div>`).join("") : "") +
+    `<br><div class="d">${L("Shift+right-click: options")}</div>`;
   placeTip(e);
 }
 function showUnwantedTip(e) {

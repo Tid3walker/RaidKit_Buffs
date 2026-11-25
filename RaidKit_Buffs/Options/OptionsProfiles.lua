@@ -348,12 +348,6 @@ local function CreateLossSoundButtons(Add, x, y)
     content.lossTestBtn = Place(Button(content, L["Test"], 60, function() ns:TestLoss() end), x + 236, y)
     content.lossTestBtn:SetHeight(20)
     SetTooltip(content.lossTestBtn, L["Test the loss alarm"], L["Shows the alarm as if the buff cap had pushed off a consumable of the bar: red blinking icon, chat line, sound. No buff is removed."])
-    -- without a buff cap there is no loss alarm (CheckLosses, user 2026-11-21): sound and test are not shown. The
-    -- window is built after PLAYER_LOGIN (ns:DetectBuffCap), and a hidden child stays hidden when its page is shown.
-    if not ns.HAS_BUFF_CAP then
-        content.lossSoundBtn:Hide()
-        content.lossTestBtn:Hide()
-    end
 end
 
 local function CreateProfilesPage(Add)

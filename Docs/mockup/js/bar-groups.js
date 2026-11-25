@@ -116,10 +116,9 @@ function buildGroup(el, p, g, main) {
   const w = el.offsetWidth, lw = 0, rw = 0;
   // group box (2026-11-11): icons + row names, plus the frame padding and the group name above it. Snapping and the
   // outline use this box (the buff areas are own groups since phase 2, 2026-11-11).
-  // the main group always keeps its name line: the counter "Buffs n/32" sits there (session 4b, user: it counts every
-  // buff, not just "Sonstige"; = PlaceCounter in Bar.lua), on the side away from the group name
-  // session 4c (user): that place does not fit either; hidden until it is an option per group (SHOW_COUNTER)
-  const fp = frameOn(g) ? FRAME_PAD : 0, nameH = (gEff(g, "showName", p) || (main && SHOW_COUNTER)) ? GNAME_H : 0, h = el.offsetHeight;
+  // the counter "Buffs n/32" in the main group's name line (session 4b, hidden since 4c) is gone since 2026-11-25: the
+  // "Buff counter" icon goes into any row instead (bar-areas.js updateCounterButton)
+  const fp = frameOn(g) ? FRAME_PAD : 0, nameH = gEff(g, "showName", p) ? GNAME_H : 0, h = el.offsetHeight;
   const fb = fp + frameOutset(g); // box edge: the border lies inside the box (2026-11-15), the background stays at fp
   el._box = { l: -(lw + fb), t: -fb - nameH, w: w + lw + rw + 2 * fb, h: h + 2 * fb + nameH };
   // 2026-11-15 (proposal, user): the name line lies inside the frame and the outline, so the visible outline no longer
@@ -127,15 +126,6 @@ function buildGroup(el, p, g, main) {
   el._nameH = 0;
   el._alignR = rowsAlignRight(p.rows); // from the rows since 2026-11-18 (user; before "Icons:" of the group)
   el._anchorPt = anchorPoint(el._alignR); // corner a free group grows away from (2026-11-14)
-  if (main) {
-    const c = document.createElement("div");
-    c.className = "cb-counter"; c.id = "cbCounter"; if (!SHOW_COUNTER) c.style.visibility = "hidden";
-    c.style.top = (-fb - nameH) + "px"; c.style.left = c.style.right = "auto";
-    if (el._alignR) c.style.left = -(lw + fb) + "px"; else c.style.right = -(rw + fb) + "px";
-    c.addEventListener("mousemove", showCounterTip); c.addEventListener("mouseleave", hideTip);
-    c.addEventListener("mousedown", (e) => { if (e.button === 0 && (e.shiftKey || (sim.optionsOpen && !e.ctrlKey))) startMove(e, el); });
-    el.appendChild(c);
-  }
   if (frameOn(g)) {
     const fr = document.createElement("div");
     fr.className = "cb-gframe";

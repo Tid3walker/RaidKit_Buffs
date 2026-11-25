@@ -27,6 +27,7 @@ function showBarTip(e, b) {
       `<div class="d">${use}</div>${isSlot(en) && en.v.length > 1 ? `<div class="d">${L("Mouse wheel: switch variant")}</div>` : ""}<div class="d">${L("Shift+right-click: options")}</div>`;
     return placeTip(e);
   }
+  if (info.counter) return showCounterTip(e); // buff counter (2026-11-25, bar-areas.js)
   const status = st.active ? `<div class="g">${st.exp === Infinity ? L("Active") : fmt(L("Active - %s left"), fmtTimeLong(st.exp - t))}</div>` : `<div class="r">${L("Missing")}</div>`;
   if (info.mount) {
     // mount (2026-11-19, = BuffButton_OnEnter): riding = the mount's buff; not riding = the item Ctrl+click mounts

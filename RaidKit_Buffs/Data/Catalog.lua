@@ -416,8 +416,14 @@ ns.BUFF_PLACE = {
 -- Deliberately without alternatives: Flasks, Zanza, Blasted Lands buffs, Limited Invulnerability Potion,
 -- Free Action Potion. Greater Arcane Protection has no smaller Arcane Protection Potion in Classic Era.
 ns.DEFAULT_ALTS = {
-    [13452] = { 9187 },         -- Elixir of the Mongoose: Elixir of Greater Agility
-    [12451] = { 9206 },         -- Juju Power: Elixir of Giants
+    -- main elixirs (user 2026-11-25): the strongest scroll (rank IV) as the second alternative, the first one where
+    -- the elixir had none
+    [13452] = { 9187, 10309 },  -- Elixir of the Mongoose: Elixir of Greater Agility, Scroll of Agility IV
+    [9206] = { 10310 },         -- Elixir of Giants: Scroll of Strength IV
+    [3825] = { 10307 },         -- Elixir of Fortitude: Scroll of Stamina IV
+    [9179] = { 10308 },         -- Elixir of Greater Intellect: Scroll of Intellect IV
+    [13447] = { 10306 },        -- Elixir of the Sages: Scroll of Spirit IV
+    [12451] = { 9206, 10310 },  -- Juju Power: Elixir of Giants, Scroll of Strength IV (user 2026-11-25)
     [12460] = { 12820 },        -- Juju Might: Winterfall Firewater
     -- Smoked Desert Dumplings: Blessed Sunfruit, Grilled Squid (agility, on purpose; user 2026-11-10), then
     -- Dirge's with its alternatives (user 2026-11-11: one food icon that covers everything relevant)
@@ -426,7 +432,7 @@ ns.DEFAULT_ALTS = {
     [21023] = { 12215, 12218, 12216, 17222, 18045 }, -- Heavy Kodo Stew, Monster Omelet, Spiced Chili Crab,
                                                      -- Spider Sausage, Tender Wolf Steak
     [21151] = { 18269 },        -- Rumsey Rum Black Label: Gordok Green Grog
-    [13445] = { 8951 },         -- Elixir of Superior Defense: Elixir of Greater Defense
+    [13445] = { 8951, 10305 },  -- Elixir of Superior Defense: Elixir of Greater Defense, Scroll of Protection IV
     [13457] = { 6049 },         -- Greater Fire Protection Potion: Fire Protection Potion
     [13456] = { 6050 },         -- Greater Frost Protection Potion: Frost Protection Potion
     [13458] = { 6052 },         -- Greater Nature Protection Potion: Nature Protection Potion

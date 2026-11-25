@@ -271,40 +271,8 @@ local function CreateAreas()
             end
             f.preview = NewPreview(1, 0.25, 0.25) -- one red cell while empty and the previews show
         elseif a == "other" then
-            -- counter with tooltip (all buffs that no row shows). Session 4b (user: it counts every buff, not just
-            -- "Sonstige"): it belongs to the main group and sits in its name line, placed by PlaceCounter
-            f.counter = BS.container:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-            f.counterHit = CreateFrame("Frame", nil, BS.container)
-            f.counterHit:SetFrameLevel(BS.container:GetFrameLevel() + ICON_LEVEL)
-            BS.container.counter, BS.container.counterHit = f.counter, f.counterHit
-            f.counterHit:SetSize(B.COUNTER_W - 4, 16)
-            f.counterHit:EnableMouse(true)
-            AreaDrag(f.counterHit)
-            f.counterHit:SetScript("OnEnter", function(self)
-                local n, cap = #ns.auraList, ns.BUFF_CAP
-                GameTooltip:SetOwner(self, "ANCHOR_BOTTOMLEFT")
-                if ns.HAS_BUFF_CAP then
-                    local free = cap - n
-                    GameTooltip:SetText(L["Buff slots: %d of %d"]:format(n, cap))
-                    local lv = B.CapLevel(free)
-                    if free > 0 then GameTooltip:AddLine(L["%d free"]:format(free), lv and lv.text[1] or 0.2, lv and lv.text[2] or 1, lv and lv.text[3] or 0.2)
-                    else GameTooltip:AddLine(L["Full - the next buff pushes out another one"], 1, 0.3, 0.3, true) end
-                    GameTooltip:AddLine(L["From 4 free slots on the bar is tinted: yellow, orange, red at 1."], 0.6, 0.6, 0.6, true)
-                    GameTooltip:AddLine(L["RaidKit Buffs does not see invisible buffs (some enchants, set bonuses)."], 0.6, 0.6, 0.6, true)
-                else
-                    GameTooltip:SetText(L["Active buffs: %d"]:format(n))
-                    GameTooltip:AddLine(L["This version has no buff cap."], 0.2, 1, 0.2)
-                end
-                local covered, first = B.CoveredSet(), true
-                for _, au in ipairs(ns.auraList) do
-                    if not covered[au.spellId] and not covered[au.name] then
-                        if first then GameTooltip:AddLine(" ") GameTooltip:AddLine(L["Not in a row:"], 1, 1, 1) first = false end
-                        GameTooltip:AddLine(au.name or "?", 0.6, 0.6, 0.6)
-                    end
-                end
-                GameTooltip:Show()
-            end)
-            f.counterHit:SetScript("OnLeave", function() GameTooltip:Hide() end)
+            -- the counter "Buffs n/32" (session 4b, hidden since 4c) is gone since 2026-11-25: the "Buff counter" in a
+            -- row replaces it (B.UpdateCounterButton in BarAreas.lua)
             f.preview = NewPreview(0.1, 0.6, 1) -- blue: room for "Sonstige"
         else
             -- debuff section: the name, then the icons. Its divider (f.debLine, 2026-11-11) is the group separator

@@ -11,7 +11,6 @@
 // - edge of a group (EDGE_W inside its outline): only this group; it comes loose, and whatever hung on it takes over
 //   its snap (closes the gap, like a hidden area) or, if it was free, stays where it is.
 // Hovering shows it before pressing: the outlines that would move turn yellow.
-const SHOW_COUNTER = false; // = SHOW_COUNTER in Bar.lua (session 4c)
 const MOVER_PAD = 2, HOVER_PAD = 8, EDGE_W = 12; // EDGE_W 8 -> 12 in session 4b (user: edge should work earlier)
 const moverPad = (el) => (el._g && frameOn(el._g) ? 0 : MOVER_PAD);
 // hint in the options (group panel and "Alle Gruppen"), = MOVE_HINT in Options.lua
@@ -281,6 +280,7 @@ function updateAll() {
   detectLosses(t);
   for (const b of barButtons) {
     const id = shownVariant(b._entry), info = itemInfo(id);
+    if (info.counter) { updateCounterButton(b, t); continue; } // buff counter (2026-11-25, bar-areas.js)
     // weapon entries: state of the hand (Windfury on the main hand shows the Windfury icon, counts as active)
     const ws = isWeaponEntry(b._entry) ? weaponEntryState(b._entry) : null;
     let st = ws || itemBuffState(id);

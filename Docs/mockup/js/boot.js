@@ -26,6 +26,7 @@ const MOCKUP_SCRIPTS = [
   "js/options-info.js",
   "js/options-refresh.js",
   "js/options.js",
+  "js/loss-report.js",
   "js/page.js",
 ];
 function loadScript(src) {

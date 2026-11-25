@@ -81,8 +81,9 @@ const BUFF_PLACE = {
 };
 // = ns.DEFAULT_ALTS in Data.lua: default alternatives when an item is added or comes from a template
 const DEFAULT_ALTS = {
-  13452: [9187], 12451: [9206], 12460: [12820], 20452: [13810, 13928, 21023, 12215, 12218, 12216, 17222, 18045], 21023: [12215, 12218, 12216, 17222, 18045], 21151: [18269],
-  13445: [8951], 13457: [6049], 13456: [6050], 13458: [6052], 13459: [6048], 13455: [4623], 13442: [5633],
+  13452: [9187, 10309], 9206: [10310], 3825: [10307], 9179: [10308], 13447: [10306], // + strongest scroll (2026-11-25)
+  12451: [9206, 10310], 12460: [12820], 20452: [13810, 13928, 21023, 12215, 12218, 12216, 17222, 18045], 21023: [12215, 12218, 12216, 17222, 18045], 21151: [18269],
+  13445: [8951, 10305], 13457: [6049], 13456: [6050], 13458: [6052], 13459: [6048], 13455: [4623], 13442: [5633],
   20004: [3388],
   18262: [12404, 12643], // weapon: Elemental, then Dense Sharpening Stone, Dense Weightstone (blunt; user 2026-11-10)
   [-22783]: [-10220], [-10220]: [-22783], // mage armors (2026-11-15, user): Mage Armor <-> Ice Armor
@@ -403,7 +404,6 @@ function applyAura(sp, dur) {
 }
 // simulation of the cap: the oldest buff that is not protected drops (the game decides, not RaidKit Buffs)
 function enforceCap() {
-  if (!hasCap) return;
   const t = now();
   let act = activeAuras(t);
   while (act.length > BUFF_CAP) {
@@ -417,8 +417,6 @@ function cancelAura(sp) { delete sim.auras[sp]; sim.cancelled.add(String(sp)); }
 // = loss alarm (proposal): a consumable buff disappeared although time was left and the player did not
 // remove it himself -> icon blinks red, chat message. In Lua: UNIT_AURA, compare with the last known state.
 function detectLosses(t) {
-  // only Era has the buff cap the alarm is for (user 2026-11-21, = CheckLosses in BarState.lua)
-  if (!hasCap) { sim.cancelled.clear(); sim.prev = {}; return; }
   const cur = {};
   for (const sp of activeAuras(t)) cur[sp] = sim.auras[sp];
   for (const [sp, exp] of Object.entries(sim.prev)) {
@@ -458,6 +456,7 @@ function lossAlarm(sp, name, left, test) {
   sim.lost[sp] = t + 10;
   print((test ? L("[Test] ") : "") + fmt(L("|cffff4040%s has vanished|r although %s were left (buff cap?)."), name, fmtTimeLong(left)));
   flash(fmt(L("%s lost!"), name));
+  if (!test) recordLoss(name, left); // boss fight / raid summary (loss-report.js)
   if (t - lossSoundAt < 1) return;
   lossSoundAt = t;
   playLossSound();

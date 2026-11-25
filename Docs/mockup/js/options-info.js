@@ -26,9 +26,9 @@ const INFO_LEGEND = [
   ["Lock", "can only be used after combat"],
   ["Red border", "unwanted buff"],
   ["MH / OH", "weapon enchant on the main hand / off hand"],
-  // third value true = only with a buff cap (Era; user 2026-11-21, = cap = true in OptionsInfo.lua)
-  ["Yellow, orange, red bar", "few free buff slots: yellow from 4, red at 1", true],
-  ["Blinking red", "a consumable vanished early (buff cap?), with chat line and sound", true],
+  ["Number in a row", "used buff slots (buff counter, from the buff catalog)"],
+  ["Yellow, orange, red bar", "few free buff slots: yellow from 4, red at 1"],
+  ["Blinking red", "a consumable vanished early (buff cap?), with chat line and sound"],
 ];
 const INFO_COMMANDS = [
   ["/rkb, /rkbc", "open or close these options"],
@@ -48,8 +48,8 @@ const INFO_X = [10, 338, 666], INFO_W = 308, INFO_GAP = 14; // = INFO_X, INFO_W,
 
 function infoPairs(list) {
   const box = mk("div", "ipairs");
-  for (const [k, t, cap] of list) {
-    const line = mk("div", cap ? "ipair caponly" : "ipair");
+  for (const [k, t] of list) {
+    const line = mk("div", "ipair");
     line.appendChild(mk("span", "k", L(k)));
     line.appendChild(document.createTextNode(": " + L(t)));
     box.appendChild(line);
@@ -62,9 +62,9 @@ function infoHead(col, text) { col.appendChild(mk("div", "ihead", L(text))); }
 // Never the character or realm name (privacy).
 function infoReport() {
   const groups = profile.groups ? profile.groups.filter((g) => !g.area).length : 1;
-  return ["RaidKit Buffs 0.8.2",
+  return ["RaidKit Buffs 0.8.3",
     "Client: 1.15.8 (mockup), " + ({ en: "enUS", de: "deDE", fr: "frFR", es: "esES" }[LANG] || "enUS"),
-    "Class: " + playerClass + ", buff cap: " + (hasCap ? BUFF_CAP : "none"),
+    "Class: " + playerClass + ", buff cap: " + BUFF_CAP,
     "Groups: " + groups + ", rows: " + profile.rows.length + ", saved profiles: " + savedNames().length,
     "Errors (0):", "-"].join("\n");
 }
@@ -81,7 +81,7 @@ function createInfoPage() {
   const ic = mk("img", "ilogo"); ic.src = LOGO_SRC; head.appendChild(ic);
   const ht = mk("div", "ihtext");
   ht.appendChild(mk("div", "ititle", "RaidKit - Buffs & Consumables"));
-  ht.appendChild(mk("div", "isub", fmt(L("Version %s - WoW Classic Era"), "0.8.2")));
+  ht.appendChild(mk("div", "isub", fmt(L("Version %s - WoW Classic Era"), "0.8.3")));
   if (AUTHOR_TAG) ht.appendChild(mk("div", "isub", fmt(L("by %s"), AUTHOR_TAG)));
   head.appendChild(ht);
   cols[0].appendChild(head);
@@ -92,8 +92,7 @@ function createInfoPage() {
 
   // column 2: buff cap, chat commands
   infoHead(cols[1], "Buff cap");
-  cols[1].appendChild(mk("div", "itext caponly", L("Classic Era shows at most 32 buffs on you. When all slots are full, a new buff pushes another one off, consumables included. RaidKit Buffs colors the bar when slots run short and raises an alarm when a consumable vanished early. Tip: put useless buffs into \"Unwanted Buffs\" and remove them with the red X.")));
-  C.infoCap = mk("div", "itext icap"); cols[1].appendChild(C.infoCap);
+  cols[1].appendChild(mk("div", "itext", L("Classic Era shows at most 32 buffs on you. When all slots are full, a new buff pushes another one off, consumables included. RaidKit Buffs colors the bar when slots run short and raises an alarm when a consumable vanished early; after a boss fight and when leaving the raid it lists what was lost. Tip: put useless buffs into \"Unwanted Buffs\" and remove them with the red X.")));
   infoHead(cols[1], "Chat commands");
   cols[1].appendChild(infoPairs(INFO_COMMANDS));
   cols[1].appendChild(mk("div", "itext idim", L("Macro example: a macro with \"/rkb profile Tank\" loads that profile with one click.")));
@@ -109,7 +108,7 @@ function createInfoPage() {
   rb.classList.add("inforeport"); // not "ibtn": that is the reset button (options-bars.js)
   cols[2].appendChild(rb);
 
-  // live counter: once a second while the page is shown (= OnUpdate of the page in OptionsInfo.lua)
+  // error count: once a second while the page is shown (= OnUpdate of the page in OptionsInfo.lua)
   setInterval(() => { if (optPage === "info") refreshInfoPage(); }, 1000);
 }
 
@@ -123,9 +122,7 @@ function alignInfoColumns() {
 }
 
 function refreshInfoPage() {
-  if (!C.infoCap) return;
+  if (!C.infoErrors) return;
   alignInfoColumns();
-  const n = activeAuras(now()).length + (demo ? demo.buffs.length + demo.nRows : 0);
-  C.infoCap.textContent = hasCap ? fmt(L("Buffs on you now: %d of %d"), n, BUFF_CAP) : L("This realm has no buff cap.");
   C.infoErrors.textContent = fmt(L("Errors this session: %d"), 0);
 }

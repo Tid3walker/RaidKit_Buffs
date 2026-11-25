@@ -97,7 +97,7 @@ function createBarsPanel() {
   C.optHead = [Place(Label(L("Options")), GRID_X, OPT_Y), Place(mk("div", "sep"), GRID_X, OPT_Y + 20)];
   C.optHead[1].style.width = MID_W + "px";
   C.gCountCb.classList.add("notarea");
-  C.gCapCb.classList.add("notdebuff", "caponly"); // "Buff-Limit-Färbung" makes no sense for debuffs (session 4c, user)
+  C.gCapCb.classList.add("notdebuff"); // "Buff-Limit-Färbung" makes no sense for debuffs (session 4c, user)
   const gpanel = [C.gNameCb, C.gCapCb, C.gCountCb, C.gTimeCb, C.gTimeSizeSl, ...gSizes];
   for (const el of [...gpanel, C.gPosText, C.gFreeBtn, C.gSizeLine]) el.classList.add("grppanel");
   C.controls.push(...gpanel);
