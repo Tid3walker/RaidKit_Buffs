@@ -6,9 +6,10 @@
 ## Notes-esMX: Barra configurable para consumibles y bufos: gris = falta, en color = activo, Ctrl+clic = usar.
 ## Notes-deDE: Konfigurierbare Leiste für Consumables und Buffs: grau = fehlt, farbig = aktiv, Strg+Klick = benutzen.
 ## Author: Tid3walker
-## Version: 0.8.2
+## Version: 0.8.3
 ## IconTexture: Interface\Icons\INV_Potion_62
 ## SavedVariables: RaidKitBuffsDB
+## X-Curse-Project-ID: 1821316
 
 Locales\Locale.lua
 Locales\Locale_deDE.lua
@@ -25,6 +26,7 @@ Core\Migrations.lua
 Core\Slash.lua
 Core\Profiles.lua
 Core\Auras.lua
+Core\LossReport.lua
 Bar\BarBase.lua
 Bar\BarGroups.lua
 Bar\BarStyle.lua

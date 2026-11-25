@@ -46,9 +46,8 @@ local function DemoAdd(list, defs, now)
     if #free > 0 then list[#list + 1] = DemoAura(free[math.random(#free)], now) end
 end
 
--- free buff slots for demo buffs: the demo never shows more than the cap allows (huge without a cap)
+-- free buff slots for demo buffs: the demo never shows more than the cap allows
 local function DemoFree()
-    if not ns.HAS_BUFF_CAP then return 99 end
     local demo = ns.demo
     return ns.BUFF_CAP - #ns.auraList - (demo and (#demo.buffs + demo.nRows) or 0)
 end

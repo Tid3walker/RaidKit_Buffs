@@ -130,6 +130,7 @@ end
 local function Button_OnEnter(self)
     if not self.itemID then return end
     if self.isWeapon then return WeaponButton_OnEnter(self) end
+    if self.isCounter then return B.ShowCounterTip(self) end -- buff counter (2026-11-25, BarAreas.lua)
     if self.isBuff then return BuffButton_OnEnter(self) end
     GameTooltip:SetOwner(self, "ANCHOR_BOTTOMLEFT")
     GameTooltip:SetItemByID(self.itemID)
@@ -297,6 +298,7 @@ ns.USE_MODE_HINT = ns.LocalizedTable({ ctrl = "Ctrl+click: use" })
 local function CancelMacro(entry)
     local mb = ns.buffCatalog[ns.EntryMain(entry)]
     if mb and mb.mount then return "/dismount" end -- mount (2026-11-17)
+    if mb and mb.counter then return nil end -- buff counter (2026-11-25): removes nothing
     local lines, seen = {}, {}
     for _, itemID in ipairs(ns.EntryIDs(entry)) do
         for _, spellID in ipairs(ns:GetBuffSpellsForItem(itemID)) do
@@ -373,6 +375,8 @@ function ns:ApplyUseMode(btn, entry)
     btn.hand = btn.isWeapon and entry.hand or nil
     -- foreign buff (negative ID): no item; an own buff gets its spell name for Ctrl+click
     btn.isBuff = ns.buffCatalog[ns.EntryMain(entry)] ~= nil
+    -- buff counter (2026-11-25): shows the used buff slots, no click does anything (B.UpdateCounterButton)
+    btn.isCounter = btn.isBuff and ns.buffCatalog[ns.EntryMain(entry)].counter == true or false
     -- own buffs (2026-11-14): Battle Shout and the class buffs of selfClass (single-target spell, selfCast); a buff
     -- slot casts its chosen variant (2026-11-15, set again in UpdateSecure when the mouse wheel changes it)
     local b = ns.buffCatalog[ns.EntryPick(entry)]

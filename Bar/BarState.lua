@@ -61,6 +61,10 @@ local function UpdateWeaponButton(btn)
 end
 
 local function UpdateButton(btn)
+    if btn.isCounter then return B.UpdateCounterButton(btn) end -- buff counter (2026-11-25, BarAreas.lua)
+    -- a pooled button may have shown the counter before: icon back, its number away
+    btn.icon:Show()
+    if btn.capText then btn.capText:Hide() end
     if btn.isWeapon then return UpdateWeaponButton(btn) end
     local entry = btn.entry
     -- Shown variant: the active one, else what Ctrl+click would use, else the chosen one (red 0)
@@ -273,6 +277,7 @@ local function LossAlarm(id, left, test)
     local msg = L["|cffff4040%s has vanished|r although %s were left (buff cap?)."]:format(name, FormatTimeLong(left))
     ns:Print("%s%s", test and L["[Test] "] or "", msg)
     UIErrorsFrame:AddMessage(L["%s lost!"]:format(name), 1, 0.2, 0.2)
+    if not test then ns:RecordLoss(id, left) end -- boss fight / raid summary (Core/LossReport.lua)
     -- several consumables lost at once: one sound
     if GetTime() - (ns.lossSoundAt or 0) < 1 then return end
     ns.lossSoundAt = GetTime()
@@ -313,9 +318,64 @@ function ns:TestLoss()
     ns:PlayLossSound()
 end
 
+-- Mind control (2026-11-24, user: at Kel'Thuzad every active elixir was reported lost while mind controlled): while
+-- the player is charmed the game reports no buffs; afterwards they are back. No alarm while charmed, while the buff
+-- list is completely empty (never the buff cap) and LOSS_CHARM_GRACE seconds after a charm. A vanished consumable is
+-- only reported LOSS_CONFIRM_DELAY seconds later, if it is still missing and nothing excuses it then (the charm flag
+-- may come a moment after the buffs vanish). What is active again afterwards is simply watched again.
+local LOSS_CONFIRM_DELAY = 1.5
+local LOSS_CHARM_GRACE = 5
+local UnitIsCharmed, HasFullControl = UnitIsCharmed, HasFullControl
+local pendingLoss = {} -- itemID -> true while a vanished consumable waits for ConfirmLoss
+
+-- why nothing counts as lost right now (nil = a vanished consumable is a real loss)
+local function LossExcuse(now)
+    if UnitIsCharmed and UnitIsCharmed("player") then
+        ns.charmGraceUntil = now + LOSS_CHARM_GRACE
+        return "charmed"
+    end
+    if now < (ns.charmGraceUntil or 0) then return "after charm" end
+    if #ns.auraList == 0 then return "no buffs" end
+    if (now - (ns.lastCancel or 0)) < 2 then return "removed" end -- right-click, Blizzard buff frame, death
+    if UnitIsDeadOrGhost("player") then return "dead" end
+    -- loading screen and shortly after it (ns:OnLeavingWorld/OnEnteringWorld): the aura list is not reliable
+    if ns.zoning or now < (ns.zoneGraceUntil or 0) then return "zoning" end
+    return nil
+end
+
+-- Diagnosis (2026-11-24): the last 20 vanished consumables with the verdict, in RaidKitBuffsDB.debugLoss (read from
+-- the SavedVariables after /reload). Not shown in the game.
+local function LogLoss(id, left, verdict)
+    local db = RaidKitBuffsDB
+    if not db then return end
+    db.debugLoss = db.debugLoss or {}
+    local log = db.debugLoss
+    log[#log + 1] = string.format("%s %s left=%ds %s charmed=%s control=%s buffs=%d", date("%H:%M:%S"),
+        tostring(ns.EntryName(id) or id), math.floor(left), verdict, tostring(UnitIsCharmed and UnitIsCharmed("player")),
+        tostring(HasFullControl and HasFullControl()), #ns.auraList)
+    while #log > 20 do table.remove(log, 1) end
+end
+
+-- active again, or replaced by another variant of the same icon (e.g. a cheaper elixir): no loss
+local function IsBackOrReplaced(id)
+    for _, btn in ipairs(activeButtons) do
+        if btn.isActive and (btn.activeID == id or ns.EntryHas(btn.entry, id)) then return true end
+    end
+    return false
+end
+
+local function ConfirmLoss(id, exp)
+    pendingLoss[id] = nil
+    local now = GetTime()
+    if exp - now <= 1 then return end
+    if IsBackOrReplaced(id) then return LogLoss(id, exp - now, "back") end
+    local excuse = LossExcuse(now)
+    if excuse then return LogLoss(id, exp - now, "excused: " .. excuse) end
+    LogLoss(id, exp - now, "ALARM")
+    LossAlarm(id, exp - now)
+end
+
 CheckLosses = function()
-    -- only Era has the buff cap the alarm is for (user 2026-11-21): elsewhere no alarm, no sound
-    if not ns.HAS_BUFF_CAP then watched = {} return end
     local now = GetTime()
     local current = {}
     for _, btn in ipairs(activeButtons) do
@@ -323,18 +383,15 @@ CheckLosses = function()
             current[btn.activeID] = btn.expiration
         end
     end
-    -- loading screen and shortly after it (ns:OnLeavingWorld/OnEnteringWorld): the aura list is not reliable, so
-    -- nothing counts as lost; what is active again afterwards is simply watched again
-    local excused = (now - (ns.lastCancel or 0)) < 2 or UnitIsDeadOrGhost("player")
-        or ns.zoning or now < (ns.zoneGraceUntil or 0)
+    local excuse = LossExcuse(now)
     for id, exp in pairs(watched) do
-        if not current[id] and exp - now > 2 and not excused then
-            -- replaced by another variant of the same icon (e.g. a cheaper elixir): no loss
-            local replaced = false
-            for _, btn in ipairs(activeButtons) do
-                if btn.isActive and ns.EntryHas(btn.entry, id) then replaced = true end
+        if not current[id] and exp - now > 2 and not IsBackOrReplaced(id) then
+            if excuse then
+                LogLoss(id, exp - now, "excused: " .. excuse)
+            elseif not pendingLoss[id] then
+                pendingLoss[id] = true
+                C_Timer.After(LOSS_CONFIRM_DELAY, function() ns:Try("ConfirmLoss", ConfirmLoss, id, exp) end)
             end
-            if not replaced then LossAlarm(id, exp - now) end
         end
     end
     watched = current

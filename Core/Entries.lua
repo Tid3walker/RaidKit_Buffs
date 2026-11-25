@@ -189,6 +189,7 @@ end
 function ns.EntryName(id)
     local b = ns.buffCatalog[id]
     if b and b.mount then return L["Mount"] end
+    if b and b.counter then return L["Buff counter"] end -- no spell of its own (2026-11-25)
     -- a trinket (b.item, 2026-11-20): the item's name, not its buff's (user: "Gift of Life" instead of "Lifegiving Gem")
     if b and b.item then return ns.GetItemInfo(b.item) or b.name end
     if b then return ns.GetSpellName(b.spells[1]) or b.name end

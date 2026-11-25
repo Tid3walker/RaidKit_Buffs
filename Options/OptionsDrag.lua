@@ -76,7 +76,8 @@ local function CreateDragFrame()
             self.hint:SetText("|cffff4040" .. L["Remove"] .. "|r")
         elseif S.drag and S.drag.from == "catalog" and (overGrid or overStack) then
             local row = overStack and O.StackRowUnderMouse() or O.CurrentRow()
-            if row and row.unwanted and not ns.IsBuffID(S.drag.itemID) then
+            local cb = ns.buffCatalog[S.drag.itemID]
+            if row and row.unwanted and (not ns.IsBuffID(S.drag.itemID) or (cb and cb.counter)) then
                 self.hint:SetText("|cffff4040" .. L["Buffs only"] .. "|r")
             else
                 self.hint:SetText(O.RowIndexOf(row, S.drag.itemID) and L["Move"] or "|cff40ff40" .. L["Add"] .. "|r")

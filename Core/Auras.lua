@@ -235,7 +235,7 @@ function ns:GetBuffNames(id)
     if names then return names end
     names = {}
     local b = ns.buffCatalog[id]
-    if b and b.mount then return names end -- never by name (Brown Horse is only its ID)
+    if b and (b.mount or b.counter) then return names end -- never by name (Brown Horse / the counter are only IDs)
     for _, spellID in ipairs(b and b.spells or {}) do
         local n = ns.GetSpellName(spellID)
         if n then names[#names + 1] = n end
@@ -272,9 +272,10 @@ end
 function ns.BuffTipSpell(b)
     return b.tipSpell or b.spells[1]
 end
--- tooltip of a catalog buff that is not active (2026-11-17): the mount entry has no spell of its own, only its name
+-- tooltip of a catalog buff that is not active (2026-11-17): the mount entry and the buff counter (2026-11-25) have
+-- no spell of their own, only their name
 function ns.SetBuffTip(b)
-    if b.mount then
+    if b.mount or b.counter then
         GameTooltip:SetText(ns.EntryName(b.id), 1, 1, 1)
     else
         GameTooltip:SetSpellByID(ns.BuffTipSpell(b))

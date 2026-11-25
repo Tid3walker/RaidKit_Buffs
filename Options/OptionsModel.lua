@@ -107,7 +107,8 @@ local function InsertItem(itemID, pos, rowArg)
     end
     if row.unwanted then
         -- unwanted list: only buffs, plain IDs (a buff already there is just moved)
-        if not ns.IsBuffID(itemID) then
+        local cb = ns.buffCatalog[itemID]
+        if not ns.IsBuffID(itemID) or (cb and cb.counter) then -- not the buff counter either (2026-11-25)
             ns:Print(L["Only buffs can be unwanted."])
             return
         end

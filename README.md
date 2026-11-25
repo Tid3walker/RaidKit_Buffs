@@ -32,7 +32,7 @@ git clone https://github.com/Tid3walker/RaidKit_Buffs.git
 - **Remove unwanted buffs with one click** - even in combat. Intellect on a warrior, costumes, transformations: they
   are collected in their own row, and one click clears them all to free up buff slots.
 - **The bar changes color as the 32-buff limit fills up** (4 slots free = yellow ... full = red), so you can make
-  room before an expensive elixir gets pushed off. A loss alarm tells you when a consumable vanished early.
+  room before an expensive elixir gets pushed off. A buff counter in any row shows how many slots are in use. A loss alarm tells you when a consumable vanished early, and the chat lists your losses after each boss fight and when you leave the raid.
 - **Cheaper alternatives already set up:** many consumables come with a fallback (Elixir of the Mongoose -> Greater
   Agility, Juju Power -> Elixir of Giants ...). Whatever you have in your bags is used.
 - Weapon enchants, world buffs, raid buffs, your own class buffs and an optional mount icon.
